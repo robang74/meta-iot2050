@@ -1,7 +1,7 @@
-From 1f118601fbf8260323eeffcbbcca77f5dc49ce9a Mon Sep 17 00:00:00 2001
+From e64bb2bf7dbadd0aa43f2a2682f6d7049fb894ab Mon Sep 17 00:00:00 2001
 From: Kishon Vijay Abraham I <kishon@ti.com>
 Date: Tue, 30 Mar 2021 17:24:47 +0530
-Subject: [PATCH 052/118] PCI: keystone: Convert to using hierarchy domain for
+Subject: [PATCH 052/123] PCI: keystone: Convert to using hierarchy domain for
  legacy interrupts
 
 K2G provides separate IRQ lines for each of the four legacy interrupts.

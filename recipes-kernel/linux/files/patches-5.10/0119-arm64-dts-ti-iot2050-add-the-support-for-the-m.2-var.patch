@@ -1,0 +1,311 @@
+From 8d2493c70af10e774f99fe00a56084e9e32943e6 Mon Sep 17 00:00:00 2001
+From: chao zeng <chao.zeng@siemens.com>
+Date: Tue, 11 Jan 2022 11:28:24 +0800
+Subject: [PATCH 119/123] arm64: dts :ti: iot2050: add the support for the m.2
+ variant
+
+1.configure the m2 board dts based on the pg2 advanced variant
+2.write the overlay for different lane combination
+
+Signed-off-by: chao zeng <chao.zeng@siemens.com>
+---
+ arch/arm64/boot/dts/ti/Makefile               |  4 +
+ .../dts/ti/k3-am65-iot2050-common-pg2-m2.dtsi | 33 ++++++++
+ .../dts/ti/k3-am65-iot2050-common-pg2.dtsi    | 23 +-----
+ .../k3-am654-iot2050-bkey-pcie-ekey-pcie.dts  | 29 +++++++
+ .../dts/ti/k3-am654-iot2050-bkey-pciex2.dts   | 29 +++++++
+ .../k3-am654-iot2050-bkey-usb3-ekey-pcie.dts  | 32 ++++++++
+ .../dts/ti/k3-am6548-iot2050-advanced-m2.dts  | 80 +++++++++++++++++++
+ 7 files changed, 208 insertions(+), 22 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2-m2.dtsi
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dts
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pciex2.dts
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dts
+ create mode 100644 arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2.dts
+
+diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
+index e8a07d411627..3de28e26aa94 100644
+--- a/arch/arm64/boot/dts/ti/Makefile
++++ b/arch/arm64/boot/dts/ti/Makefile
+@@ -11,6 +11,10 @@ dtb-$(CONFIG_ARCH_K3) += k3-am6528-iot2050-basic.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am6528-iot2050-basic-pg2.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am6548-iot2050-advanced.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am6548-iot2050-advanced-pg2.dtb
++dtb-$(CONFIG_ARCH_K3) += k3-am6548-iot2050-advanced-m2.dtb
++dtb-$(CONFIG_ARCH_K3) += k3-am654-iot2050-bkey-pciex2.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am654-iot2050-bkey-usb3-ekey-pcie.dtbo
++dtb-$(CONFIG_ARCH_K3) += k3-am654-iot2050-bkey-pcie-ekey-pcie.dtbo
+ 
+ dtb-$(CONFIG_ARCH_K3) += k3-j721e-common-proc-board.dtb
+ 
+diff --git a/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2-m2.dtsi b/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2-m2.dtsi
+new file mode 100644
+index 000000000000..40ad18747d95
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2-m2.dtsi
+@@ -0,0 +1,33 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) Siemens AG, 2021
++ *
++ * Authors:
++ *   Chao Zeng <chao.zeng@siemens.com>
++ *   Jan Kiszka <jan.kiszka@siemens.com>
++ *
++ * Common bits of the IOT2050 Basic and Advanced variants, PG2
++ */
++
++&main_pmx0 {
++	cp2102n_reset_pin_default: cp2102n-reset-pin-default {
++		pinctrl-single,pins = <
++			/* (AF12) GPIO1_24, used as cp2102 reset */
++			AM65X_IOPAD(0x01e0, PIN_OUTPUT, 7)
++		>;
++	};
++};
++
++&main_gpio1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&cp2102n_reset_pin_default>;
++	gpio-line-names =
++		"", "", "", "", "", "", "", "", "", "",
++		"", "", "", "", "", "", "", "", "", "",
++		"", "", "", "", "CP2102N-RESET";
++};
++
++&dss {
++	/* Workaround needed to get DP clock of 154Mhz */
++	assigned-clocks = <&k3_clks 67 0>;
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2.dtsi b/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2.dtsi
+index e73458ca6900..48f9242496cb 100644
+--- a/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2.dtsi
++++ b/arch/arm64/boot/dts/ti/k3-am65-iot2050-common-pg2.dtsi
+@@ -9,28 +9,7 @@
+  * Common bits of the IOT2050 Basic and Advanced variants, PG2
+  */
+ 
+-&main_pmx0 {
+-	cp2102n_reset_pin_default: cp2102n-reset-pin-default {
+-		pinctrl-single,pins = <
+-			/* (AF12) GPIO1_24, used as cp2102 reset */
+-			AM65X_IOPAD(0x01e0, PIN_OUTPUT, 7)
+-		>;
+-	};
+-};
+-
+-&main_gpio1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&cp2102n_reset_pin_default>;
+-	gpio-line-names =
+-		"", "", "", "", "", "", "", "", "", "",
+-		"", "", "", "", "", "", "", "", "", "",
+-		"", "", "", "", "CP2102N-RESET";
+-};
+-
+-&dss {
+-	/* Workaround needed to get DP clock of 154Mhz */
+-	assigned-clocks = <&k3_clks 67 0>;
+-};
++#include "k3-am65-iot2050-common-pg2-m2.dtsi"
+ 
+ &serdes0 {
+ 	assigned-clocks = <&k3_clks 153 4>, <&serdes0 AM654_SERDES_CMU_REFCLK>;
+diff --git a/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dts b/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dts
+new file mode 100644
+index 000000000000..6ed99ff82445
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dts
+@@ -0,0 +1,29 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DT overlay for M2 card:B-KEY PCIE0_LANE0 E-KEY PCIE1_LANE0
++ * Copyright (c) Siemens AG, 2022
++ *
++ * Authors:
++ *   Chao Zeng <chao.zeng@siemens.com>
++ */
++
++/dts-v1/;
++/plugin/;
++#include <dt-bindings/phy/phy.h>
++#include <dt-bindings/phy/phy-am654-serdes.h>
++#include <dt-bindings/gpio/gpio.h>
++
++&pcie1_rc {
++	num-lanes = <1>;
++	phys = <&serdes1 PHY_TYPE_PCIE 0>;
++	phy-names = "pcie-phy0";
++	status = "okay";
++};
++
++&pcie0_rc {
++	num-lanes = <1>;
++	phys = <&serdes0 PHY_TYPE_PCIE 1>;
++	phy-names = "pcie-phy0";
++	reset-gpios = <&main_gpio1 15 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pciex2.dts b/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pciex2.dts
+new file mode 100644
+index 000000000000..65515069898d
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-pciex2.dts
+@@ -0,0 +1,29 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DT overlay for M2 card:B-KEY PCIE0_LANE0 and PCIE0_LANE1 *
++ * Copyright (c) Siemens AG, 2022
++ *
++ * Authors:
++ *   Chao Zeng <chao.zeng@siemens.com>
++ */
++
++/dts-v1/;
++/plugin/;
++#include <dt-bindings/phy/phy.h>
++#include <dt-bindings/phy/phy-am654-serdes.h>
++#include <dt-bindings/gpio/gpio.h>
++
++&pcie0_rc {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_bkey_pcie_reset>;
++
++	num-lanes = <2>;
++	phys = <&serdes0 PHY_TYPE_PCIE 1>, <&serdes1 PHY_TYPE_PCIE 1>;
++	phy-names = "pcie-phy0","pcie-phy1";
++	reset-gpios = <&main_gpio1 15 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
++&pcie1_rc {
++	status = "disabled";
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dts b/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dts
+new file mode 100644
+index 000000000000..922a2eef4c55
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dts
+@@ -0,0 +1,32 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DT overlay for M2 card:B-KEY USB3.0 E-KEY PCIE1_LANE0 *
++ * Copyright (c) Siemens AG, 2022
++ *
++ * Authors:
++ *   Chao Zeng <chao.zeng@siemens.com>
++ */
++
++/dts-v1/;
++/plugin/;
++#include <dt-bindings/phy/phy.h>
++#include <dt-bindings/phy/phy-am654-serdes.h>
++
++&pcie1_rc {
++	num-lanes = <1>;
++	phys = <&serdes1 PHY_TYPE_PCIE 0>;
++	phy-names = "pcie-phy0";
++};
++
++&dwc3_0 {
++	assigned-clock-parents = <&k3_clks 151 4>,  /* set REF_CLK to 20MHz i.e. PER0_PLL/48 */
++				 <&k3_clks 151 8>;  /* set PIPE3_TXB_CLK to WIZ8B2M4VSB */
++	phys = <&serdes0 PHY_TYPE_USB3 0>;
++	phy-names = "usb3-phy";
++};
++
++&usb0 {
++	maximum-speed = "super-speed";
++	snps,dis-u1-entry-quirk;
++	snps,dis-u2-entry-quirk;
++};
+diff --git a/arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2.dts b/arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2.dts
+new file mode 100644
+index 000000000000..32cc989e88e6
+--- /dev/null
++++ b/arch/arm64/boot/dts/ti/k3-am6548-iot2050-advanced-m2.dts
+@@ -0,0 +1,80 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) Siemens AG, 2018-2022
++ *
++ * Authors:
++ *   Chao Zeng <chao.zeng@siemens.com>
++ *
++ * AM6548-based (quad-core) IOT2050 M2 variant, Based on Advanced Product Generation 2
++ * 2 GB RAM, 16 GB eMMC, USB-serial converter on connector X30
++ *
++ * Product homepage:
++ * https://new.siemens.com/global/en/products/automation/pc-based/iot-gateways/simatic-iot2050.html
++ */
++
++/dts-v1/;
++
++#include "k3-am6548-iot2050-advanced-common.dtsi"
++#include "k3-am65-iot2050-common-pg2-m2.dtsi"
++
++/ {
++	compatible = "siemens,iot2050-advanced-m2", "ti,am654";
++	model = "SIMATIC IOT2050 Advanced M2";
++};
++
++&mcu_r5fss0 {
++	/* lock-step mode not supported on this board */
++	ti,cluster-mode = <0>;
++};
++
++&main_pmx0 {
++	main_m2_enable_pins_default: main-m2-enable-pins-default {
++		pinctrl-single,pins = <
++			AM65X_IOPAD(0x01c4, PIN_INPUT_PULLUP, 7)  /* (AH13) GPIO1_17 */
++		>;
++	};
++
++	main_bkey_pcie_reset: main-bkey-pcie-reset {
++		pinctrl-single,pins = <
++			AM65X_IOPAD(0x01bc, PIN_OUTPUT_PULLUP, 7)  /* (AG13) GPIO1_15 */
++		>;
++	};
++
++	main_pmx0_m2_config_pins_default: main-pmx0-m2-config-pins-default {
++		pinctrl-single,pins = <
++			AM65X_IOPAD(0x01c8, PIN_INPUT_PULLUP, 7)  /* (AE13) GPIO1_18 */
++			AM65X_IOPAD(0x01cc, PIN_INPUT_PULLUP, 7)  /* (AD13) GPIO1_19 */
++		>;
++	};
++
++	main_m2_pcie_mux_control: main-m2-pcie-mux-control {
++		pinctrl-single,pins = <
++			AM65X_IOPAD(0x0148, PIN_INPUT_PULLUP, 7)  /* (AG22) GPIO0_82 */
++			AM65X_IOPAD(0x0160, PIN_INPUT_PULLUP, 7)  /* (AE20) GPIO0_88 */
++			AM65X_IOPAD(0x0164, PIN_INPUT_PULLUP, 7)  /* (AF19) GPIO0_89 */
++		>;
++	};
++};
++
++&main_pmx1 {
++	main_pmx1_m2_config_pins_default: main-pmx1-m2-config-pins-default {
++		pinctrl-single,pins = <
++			AM65X_IOPAD(0x0018, PIN_INPUT_PULLUP, 7)  /* (B22) GPIO1_88 */
++			AM65X_IOPAD(0x001c, PIN_INPUT_PULLUP, 7)  /* (C23) GPIO1_89 */
++		>;
++	};
++};
++
++&main_gpio0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&main_m2_pcie_mux_control>;
++};
++
++&main_gpio1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <
++	    &main_m2_enable_pins_default
++		&main_pmx0_m2_config_pins_default
++		&main_pmx1_m2_config_pins_default
++	>;
++};
+-- 
+2.34.1
+

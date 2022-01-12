@@ -1,7 +1,7 @@
-From 8d65612c7e1cffd0cef65270781e74bc1084f99f Mon Sep 17 00:00:00 2001
+From 6b7e5216368aabcbde8f9e60f5c98b202fdca3a2 Mon Sep 17 00:00:00 2001
 From: Tero Kristo <t-kristo@ti.com>
 Date: Fri, 26 Mar 2021 15:50:14 -0500
-Subject: [PATCH 061/118] remoteproc: pru: Configure firmware based on client
+Subject: [PATCH 061/123] remoteproc: pru: Configure firmware based on client
  setup
 
 Client device node property firmware-name is now used to configure

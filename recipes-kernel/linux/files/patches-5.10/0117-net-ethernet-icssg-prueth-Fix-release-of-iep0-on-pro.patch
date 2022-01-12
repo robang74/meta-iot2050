@@ -1,7 +1,7 @@
-From edc47aca71f3e93220b8b89e1e6cff584c089c5c Mon Sep 17 00:00:00 2001
+From 325bf3cdd90292cadbc37606f54571941bfb7aae Mon Sep 17 00:00:00 2001
 From: Jan Kiszka <jan.kiszka@siemens.com>
 Date: Tue, 30 Nov 2021 10:53:42 +0100
-Subject: [PATCH 117/118] net: ethernet: icssg-prueth: Fix release of iep0 on
+Subject: [PATCH 117/123] net: ethernet: icssg-prueth: Fix release of iep0 on
  probing error
 
 A typo caused crashes in case icss_iep_get_idx succeeded for iep0 but

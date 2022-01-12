@@ -1,7 +1,7 @@
-From 710c51399213c1656b617bfb6557a982ef0fd29e Mon Sep 17 00:00:00 2001
+From 12020e863dd3e1ec5b83d37b90c1f44927e02b68 Mon Sep 17 00:00:00 2001
 From: Tero Kristo <t-kristo@ti.com>
 Date: Sat, 27 Mar 2021 09:24:51 -0500
-Subject: [PATCH 067/118] soc: ti: pruss: Add helper functions to get/set
+Subject: [PATCH 067/123] soc: ti: pruss: Add helper functions to get/set
  PRUSS_CFG_GPMUX
 
 Add two new helper functions pruss_cfg_get_gpmux() & pruss_cfg_set_gpmux()

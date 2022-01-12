@@ -1,0 +1,30 @@
+From 0d7b443c67bfeaaed6e0d768c10584fd4a3d36d2 Mon Sep 17 00:00:00 2001
+From: chao zeng <chao.zeng@siemens.com>
+Date: Fri, 14 Jan 2022 14:22:14 +0800
+Subject: [PATCH 123/123] HACK: kbuild: generate __symbol_ node in the dtb file
+
+add the build -@ to generate __symbol__ node, lacking this
+node,dtbo can not apply to the base dtb.
+
+Signed-off-by: chao zeng <chao.zeng@siemens.com>
+---
+ scripts/Makefile.lib | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 3c62e7670144..da8c9b85c3a6 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -299,6 +299,9 @@ endif
+ 
+ DTC_FLAGS += $(DTC_FLAGS_$(basetarget))
+ 
++# enable creation of __symbols__ node
++DTC_FLAGS += -@
++
+ # Generate an assembly file to wrap the output of the device tree compiler
+ quiet_cmd_dt_S_dtb= DTB     $@
+ cmd_dt_S_dtb=						\
+-- 
+2.34.1
+

@@ -1,7 +1,7 @@
-From 14baa10a955d3ffa8131f737999201da39d5e795 Mon Sep 17 00:00:00 2001
+From a1c52099acc77332f8fb3b5d6168680f6c08d1cc Mon Sep 17 00:00:00 2001
 From: Suman Anna <s-anna@ti.com>
 Date: Tue, 16 Mar 2021 18:00:25 -0500
-Subject: [PATCH 083/118] arm64: dts: ti: k3-am65-main: Add ICSSG IEP nodes
+Subject: [PATCH 083/123] arm64: dts: ti: k3-am65-main: Add ICSSG IEP nodes
 
 The ICSSG IP on AM65x SoCs have two Industrial Ethernet Peripherals (IEPs)
 to manage/generate Industrial Ethernet functions such as time stamping.

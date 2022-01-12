@@ -1,7 +1,7 @@
-From 706a1eac69c2f2d437a49634fec788dfd71aaa9e Mon Sep 17 00:00:00 2001
+From d62f199703bb3aa40509fac774837dc8c5ddd271 Mon Sep 17 00:00:00 2001
 From: Grygorii Strashko <grygorii.strashko@ti.com>
 Date: Tue, 18 May 2021 23:37:26 +0300
-Subject: [PATCH 088/118] net: ethernet: ti: icss_iep: add icss_iep_get_idx()
+Subject: [PATCH 088/123] net: ethernet: ti: icss_iep: add icss_iep_get_idx()
  api
 
 Add icss_iep_get_idx() API to allow retrieve IEP from phandle list in DT.

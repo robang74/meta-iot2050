@@ -1,0 +1,51 @@
+From 2b14aa43f79131f4163fd3461aa0cdd5bf18e7db Mon Sep 17 00:00:00 2001
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Fri, 29 Jan 2021 12:54:06 +0530
+Subject: [PATCH 121/123] scripts: dtc: Build fdtoverlay tool
+
+commit 0da6bcd9fcc021ff2d6cd7c8173f42dcdff6a00b upstream.
+
+We will start building overlays for platforms soon in the kernel and
+would need fdtoverlay going forward. Lets start building it.
+
+The fdtoverlay program applies one or more overlay dtb blobs to a base
+dtb blob. The kernel build system would later use fdtoverlay to generate
+the overlaid blobs based on platform specific configurations.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Rob Herring <robh@kernel.org>
+Link: https://lore.kernel.org/r/4a201dea3ba11a00cab7e936dfc1140dac1a1ae3.1611904394.git.viresh.kumar@linaro.org
+[s-anna@ti.com: cherry-pick commit '0da6bcd9fcc0' from v5.12]
+Signed-off-by: Suman Anna <s-anna@ti.com>
+---
+ scripts/dtc/Makefile | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/dtc/Makefile b/scripts/dtc/Makefile
+index 4852bf44e913..c8c21e0f2531 100644
+--- a/scripts/dtc/Makefile
++++ b/scripts/dtc/Makefile
+@@ -1,13 +1,19 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # scripts/dtc makefile
+ 
+-hostprogs-always-$(CONFIG_DTC)		+= dtc
++hostprogs-always-$(CONFIG_DTC)		+= dtc fdtoverlay
+ hostprogs-always-$(CHECK_DT_BINDING)	+= dtc
+ 
+ dtc-objs	:= dtc.o flattree.o fstree.o data.o livetree.o treesource.o \
+ 		   srcpos.o checks.o util.o
+ dtc-objs	+= dtc-lexer.lex.o dtc-parser.tab.o
+ 
++# The upstream project builds libfdt as a separate library.  We are choosing to
++# instead directly link the libfdt object files into fdtoverlay.
++libfdt-objs	:= fdt.o fdt_ro.o fdt_wip.o fdt_sw.o fdt_rw.o fdt_strerror.o fdt_empty_tree.o fdt_addresses.o fdt_overlay.o
++libfdt		= $(addprefix libfdt/,$(libfdt-objs))
++fdtoverlay-objs	:= $(libfdt) fdtoverlay.o util.o
++
+ # Source files need to get at the userspace version of libfdt_env.h to compile
+ HOST_EXTRACFLAGS += -I $(srctree)/$(src)/libfdt
+ 
+-- 
+2.34.1
+
