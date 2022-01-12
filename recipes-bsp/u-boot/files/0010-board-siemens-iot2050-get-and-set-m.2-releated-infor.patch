@@ -1,0 +1,223 @@
+From b02cf0055a9ef287fb1c61dd061cc5e80db57155 Mon Sep 17 00:00:00 2001
+From: chao zeng <chao.zeng@siemens.com>
+Date: Fri, 7 Jan 2022 16:35:43 +0800
+Subject: [PATCH 10/14] board:siemens:iot2050:get and set m.2 releated
+ information
+
+Get the M.2 configuration,enable the power of the m.2
+Set the releated overlay according to the M.2 configuration
+
+Signed-off-by: chao zeng <chao.zeng@siemens.com>
+---
+ board/siemens/iot2050/board.c | 181 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 181 insertions(+)
+
+diff --git a/board/siemens/iot2050/board.c b/board/siemens/iot2050/board.c
+index 2be5d1eefc..93d934e128 100644
+--- a/board/siemens/iot2050/board.c
++++ b/board/siemens/iot2050/board.c
+@@ -47,6 +47,183 @@ struct iot2050_info {
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
++#define M2_CONFIG_LEN    4
++#define PCIE_MUX_CONTROL 3
++
++typedef struct gpio_config {
++	char *label;
++	char *gpio_name;
++}gpioConfig_t;
++
++typedef enum lane0_config{
++	USB30 = 0,
++	PCIE0_LANE0,
++}lane0_config_e;
++
++typedef enum lane1_config{
++	PCIE1_LANE0 = 0,
++	PCIE0_LANE1,
++}lane1_config_e;
++
++typedef struct serdes_select {
++	lane0_config_e  lane0_sel;
++	lane1_config_e  lane1_sel;
++}serdes_select_t;
++
++
++/* definition is from M.2 Spec */
++typedef struct m2_bkey_config {
++	char config_0;
++	char config_1;
++	char config_2;
++	char config_3;
++}m2_bkey_config_t;
++
++
++typedef struct serdes_select_mux {
++	char sel_usb30_pcie0_lane0;
++	char sel_pcie1_pcie0;
++	char sel_usb30_pcie0_lane1;
++}serdes_select_mux_t;
++
++typedef struct key_config {
++	m2_bkey_config_t m2_bkey_config;
++	serdes_select_mux_t m2_pinmux_select;
++	serdes_select_t serdes_select;
++}__packed key_config_t;
++
++static key_config_t config_table[] = {
++	{{0,1,0,0}, {0,0,1}, {PCIE0_LANE0, PCIE0_LANE1}},
++	{{0,0,1,0}, {0,1,0}, {PCIE0_LANE0, PCIE1_LANE0}},
++	{{0,1,1,0}, {0,1,0}, {PCIE0_LANE0, PCIE1_LANE0}},
++	{{1,0,0,1}, {0,1,0}, {PCIE0_LANE0, PCIE1_LANE0}},
++	{{1,1,0,1}, {0,1,0}, {PCIE0_LANE0, PCIE1_LANE0}},
++	{{0,0,0,1}, {1,1,0}, {USB30, PCIE1_LANE0}},
++	{{0,1,0,1}, {1,1,0}, {USB30, PCIE1_LANE0}},
++	{{0,0,1,1}, {1,1,0}, {USB30, PCIE1_LANE0}},
++	{{0,1,1,1}, {1,1,0}, {USB30, PCIE1_LANE0}},
++	{{1,0,1,1}, {1,1,0}, {USB30, PCIE1_LANE0}},
++};
++
++static gpioConfig_t m2_pinmux_config[PCIE_MUX_CONTROL] = {
++	{"SEL_USB30_PCIE0_LANE0", "gpio@600000_88"},
++	{"SEL_PCIE1_PCIE0",       "gpio@600000_82"},
++	{"SEL_USB30_PCIE0_LANE1", "gpio@600000_89"},
++};
++
++static gpioConfig_t m2_key_config[M2_CONFIG_LEN] = {
++	{"KEY_CONFIG_0", "gpio@601000_18"},
++	{"KEY_CONFIG_1", "gpio@601000_19"},
++	{"KEY_CONFIG_2", "gpio@601000_88"},
++	{"KEY_CONFIG_3", "gpio@601000_89"},
++};
++
++static gpioConfig_t m2_enable_power = {"P3V3_M2_EN", "gpio@601000_17"};
++
++static int get_pinvalue(const char *gpio_name,const char *label)
++{
++	struct gpio_desc gpio;
++
++	if (dm_gpio_lookup_name(gpio_name, &gpio) < 0 ||
++	dm_gpio_request(&gpio, label) < 0 ||
++	dm_gpio_set_dir_flags(&gpio, GPIOD_IS_IN) < 0)
++		return false;
++
++	return dm_gpio_get_value(&gpio);
++}
++
++static void set_pinvalue(const char *gpio_name,const char *label,int value)
++{
++	struct gpio_desc gpio;
++
++	if (dm_gpio_lookup_name(gpio_name, &gpio) < 0 ||
++	dm_gpio_request(&gpio, label) < 0 ||
++	dm_gpio_set_dir_flags(&gpio, GPIOD_IS_OUT) < 0) {
++		pr_err("IOT2050:Can not set the pin value\n");
++		return ;
++	}
++	dm_gpio_set_value(&gpio,value);
++}
++
++static m2_bkey_config_t get_m2_config(void)
++{
++	m2_bkey_config_t result;
++
++	result.config_0 = get_pinvalue(m2_key_config[0].gpio_name, m2_key_config[0].label);
++	result.config_1 = get_pinvalue(m2_key_config[1].gpio_name, m2_key_config[1].label);
++	result.config_2 = get_pinvalue(m2_key_config[2].gpio_name, m2_key_config[2].label);
++	result.config_3 = get_pinvalue(m2_key_config[3].gpio_name, m2_key_config[3].label);
++
++	return result;
++}
++
++static serdes_select_t get_key_config_set_m2_pinmux(void)
++{
++	int i;
++	serdes_select_t serdes_select = {USB30, PCIE1_LANE0}; /* default setting */
++	int config_table_size= sizeof(config_table)/sizeof(config_table[0]);
++	m2_bkey_config_t config = get_m2_config();
++
++	printf("B-KEY:");
++	printf("%d",config.config_0);
++	printf("%d",config.config_1);
++	printf("%d",config.config_2);
++	printf("%d",config.config_3);
++	printf("\n");
++
++	for(i = 0; i < config_table_size; i++) {
++		if(!memcmp(&config, &config_table[i].m2_bkey_config, sizeof(m2_bkey_config_t))) {
++			/* set pinmux */
++			set_pinvalue(m2_pinmux_config[0].gpio_name, m2_pinmux_config[0].label, config_table[i].m2_pinmux_select.sel_usb30_pcie0_lane0);
++			set_pinvalue(m2_pinmux_config[1].gpio_name, m2_pinmux_config[1].label, config_table[i].m2_pinmux_select.sel_pcie1_pcie0);
++			set_pinvalue(m2_pinmux_config[2].gpio_name, m2_pinmux_config[2].label, config_table[i].m2_pinmux_select.sel_usb30_pcie0_lane1);
++			/* get serdes config info */
++			serdes_select =  config_table[i].serdes_select;
++			break;
++		}
++	}
++
++	return serdes_select;
++}
++
++/*
++ * M.2 Board is a Variant Baesed On PG2 board
++ */
++static bool board_is_m2(void)
++{
++	struct iot2050_info *info = IOT2050_INFO_DATA;
++
++	return info->magic == IOT2050_INFO_MAGIC &&
++		strstr((char *)info->name, "-M2") != NULL;
++}
++
++static void configure_serdes_by_overlays(void)
++{
++	struct iot2050_info *info = IOT2050_INFO_DATA;
++	serdes_select_t serdes_sel;
++
++	/* enable m.2 connector power */
++	set_pinvalue(m2_enable_power.gpio_name, m2_enable_power.label, 1);
++	udelay(4 * 100);
++
++	if(env_get("m2_manual_config") && env_get("m2_overlays")) {
++		printf("Maunal Select M.2 Configuration\n");
++	}
++	else
++	{
++		serdes_sel = get_key_config_set_m2_pinmux();
++		if (serdes_sel.lane0_sel == PCIE0_LANE0 && serdes_sel.lane1_sel == PCIE0_LANE1)
++			env_set("m2_overlays", "ti/k3-am654-iot2050-bkey-pciex2.dtbo");
++		else if (serdes_sel.lane0_sel == USB30 && serdes_sel.lane1_sel == PCIE0_LANE1)
++			env_set("m2_overlays", "ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dtbo");
++		else if (serdes_sel.lane0_sel == PCIE0_LANE0 && serdes_sel.lane1_sel == PCIE1_LANE0)
++			env_set("m2_overlays", "ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dtbo");
++		else
++			env_set("m2_overlays", "ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dtbo");
++	}
++
++}
++
+ static bool board_is_advanced(void)
+ {
+ 	struct iot2050_info *info = IOT2050_INFO_DATA;
+@@ -103,6 +280,8 @@ void set_board_info_env(void)
+ 	if (board_is_advanced()) {
+ 		if (IS_ENABLED(CONFIG_TARGET_IOT2050_A53_PG1))
+ 			fdtfile = "ti/k3-am6548-iot2050-advanced.dtb";
++		else if (board_is_m2())
++			fdtfile = "ti/k3-am6548-iot2050-advanced-m2.dtb";
+ 		else
+ 			fdtfile = "ti/k3-am6548-iot2050-advanced-pg2.dtb";
+ 	} else {
+@@ -217,6 +396,8 @@ int board_late_init(void)
+ 
+ 	set_board_info_env();
+ 
++	if(board_is_m2())
++		configure_serdes_by_overlays();
+ 	/* remove the eMMC if requested via button */
+ 	if (IS_ENABLED(CONFIG_IOT2050_BOOT_SWITCH) && board_is_advanced() &&
+ 	    user_button_pressed())
+-- 
+2.34.1
+

@@ -20,7 +20,13 @@ SRC_URI += " \
     file://0005-arm-dts-iot2050-Add-cfg-register-space-for-ringacc-a.patch \
     file://0006-board-siemens-iot2050-Split-the-build-for-PG1-and-PG.patch \
     file://0007-arm-dts-iot2050-Use-the-auto-generator-nodes-for-fdt.patch \
-    file://0008-iot2050-Update-firmware-layout.patch \
+    file://0008-iot2050-Update-firmware-layout.patch \ 
+    file://0009-gpio-da8xx_gpio-Fix-gpio-name-with-address.patch \
+    file://0010-board-siemens-iot2050-get-and-set-m.2-releated-infor.patch \
+    file://0011-board-siemes-iot2050-use-the-named-gpio-to-control-t.patch \
+    file://0012-arm-dts-add-the-m.2-support.patch \
+    file://0013-iot2050-config-the-setexpr-cmd.patch \
+    file://0014-iot2050-add-the-m2-variant-to-the-of_list.patch \
     "
 
 SRC_URI[sha256sum] = "81b4543227db228c03f8a1bf5ddbc813b0bb8f6555ce46064ef721a6fc680413"
