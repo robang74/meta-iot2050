@@ -1,7 +1,7 @@
-From 376b3bf699445000382f64f6336986eaf1432f48 Mon Sep 17 00:00:00 2001
+From 03ad82e04f0502218121421a856e22b33bc2c926 Mon Sep 17 00:00:00 2001
 From: Kishon Vijay Abraham I <kishon@ti.com>
 Date: Tue, 30 Mar 2021 17:24:48 +0530
-Subject: [PATCH 053/118] PCI: keystone: Add PCI legacy interrupt support for
+Subject: [PATCH 053/123] PCI: keystone: Add PCI legacy interrupt support for
  AM654
 
 Add PCI legacy interrupt support for AM654. AM654 has a single HW
