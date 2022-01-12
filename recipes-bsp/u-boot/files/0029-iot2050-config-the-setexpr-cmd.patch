@@ -1,0 +1,27 @@
+From d81c43c2f8c2452b27f7dc53ad2ac6bdc935f805 Mon Sep 17 00:00:00 2001
+From: chao zeng <chao.zeng@siemens.com>
+Date: Tue, 8 Mar 2022 13:42:34 +0800
+Subject: [PATCH 29/30] iot2050: config the setexpr cmd
+
+enable the setexpr cmd under u-boot.
+
+Signed-off-by: chao zeng <chao.zeng@siemens.com>
+---
+ configs/iot2050_pg2_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/iot2050_pg2_defconfig b/configs/iot2050_pg2_defconfig
+index d5ed53c40d..f359e0eb08 100644
+--- a/configs/iot2050_pg2_defconfig
++++ b/configs/iot2050_pg2_defconfig
+@@ -57,6 +57,7 @@ CONFIG_CMD_REMOTEPROC=y
+ CONFIG_CMD_USB=y
+ CONFIG_CMD_WDT=y
+ # CONFIG_CMD_SETEXPR is not set
++CONFIG_CMD_SETEXPR=y
+ CONFIG_CMD_TIME=y
+ # CONFIG_ISO_PARTITION is not set
+ CONFIG_OF_CONTROL=y
+-- 
+2.32.0
+

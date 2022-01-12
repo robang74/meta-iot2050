@@ -1,0 +1,30 @@
+From 30c61294b87e4a176507b6221da0eeb93a5fb04c Mon Sep 17 00:00:00 2001
+From: chao zeng <chao.zeng@siemens.com>
+Date: Tue, 8 Mar 2022 13:47:32 +0800
+Subject: [PATCH 30/30] iot2050: add the m2 variant to the of_list
+
+has already use the of_list to create the node,
+in order to support m2 variant, add the m2 variant
+dtb to the list
+
+Signed-off-by: chao zeng <chao.zeng@siemens.com>
+---
+ configs/iot2050_pg2_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configs/iot2050_pg2_defconfig b/configs/iot2050_pg2_defconfig
+index f359e0eb08..1c7be33bd7 100644
+--- a/configs/iot2050_pg2_defconfig
++++ b/configs/iot2050_pg2_defconfig
+@@ -62,7 +62,7 @@ CONFIG_CMD_TIME=y
+ # CONFIG_ISO_PARTITION is not set
+ CONFIG_OF_CONTROL=y
+ CONFIG_SPL_OF_CONTROL=y
+-CONFIG_OF_LIST="k3-am6528-iot2050-basic-pg2 k3-am6548-iot2050-advanced-pg2"
++CONFIG_OF_LIST="k3-am6528-iot2050-basic-pg2 k3-am6548-iot2050-advanced-pg2 k3-am6548-iot2050-advanced-m2"
+ CONFIG_SPL_MULTI_DTB_FIT=y
+ CONFIG_SPL_OF_LIST="k3-am65-iot2050-spl"
+ CONFIG_SPL_MULTI_DTB_FIT_NO_COMPRESSION=y
+-- 
+2.32.0
+
