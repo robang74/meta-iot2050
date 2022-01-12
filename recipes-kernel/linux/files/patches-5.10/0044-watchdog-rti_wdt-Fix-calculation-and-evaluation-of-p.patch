@@ -1,7 +1,7 @@
-From 082ad933f0a640a7bc69361149b2aab19752602d Mon Sep 17 00:00:00 2001
+From 4e219067741abed3f6b433c28bb5f5e5b906e662 Mon Sep 17 00:00:00 2001
 From: Jan Kiszka <jan.kiszka@siemens.com>
 Date: Mon, 21 Feb 2022 15:33:54 +0100
-Subject: [PATCH 044/118] watchdog: rti_wdt: Fix calculation and evaluation of
+Subject: [PATCH 044/123] watchdog: rti_wdt: Fix calculation and evaluation of
  preset heartbeat
 
 This ensures that the same value is read back as was eventually

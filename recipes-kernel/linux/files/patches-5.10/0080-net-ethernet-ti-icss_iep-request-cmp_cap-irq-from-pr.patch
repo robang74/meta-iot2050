@@ -1,7 +1,7 @@
-From 37d48e88b997e3c1e5cc98ac49c78fe84dcc631e Mon Sep 17 00:00:00 2001
+From aa36580eb3ece61f82a8ead8bc6bce92a598da77 Mon Sep 17 00:00:00 2001
 From: Grygorii Strashko <grygorii.strashko@ti.com>
 Date: Thu, 29 Apr 2021 18:13:37 +0300
-Subject: [PATCH 080/118] net: ethernet: ti: icss_iep: request cmp_cap irq from
+Subject: [PATCH 080/123] net: ethernet: ti: icss_iep: request cmp_cap irq from
  probe
 
 The current INTC design allows to define IEP cmp_cap IRQ explicitly for IEP

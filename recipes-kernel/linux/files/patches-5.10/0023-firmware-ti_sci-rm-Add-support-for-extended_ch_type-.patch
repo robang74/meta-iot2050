@@ -1,7 +1,7 @@
-From 8c9023673dcd080492e8233cffcbef0dcaaf893a Mon Sep 17 00:00:00 2001
+From 39f93a774db488d995a4f07679b61f1dcc9c2d6b Mon Sep 17 00:00:00 2001
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
 Date: Sun, 25 Oct 2020 12:10:05 -0700
-Subject: [PATCH 023/118] firmware: ti_sci: rm: Add support for
+Subject: [PATCH 023/123] firmware: ti_sci: rm: Add support for
  extended_ch_type for tx channel
 
 Sysfw added 'extended_ch_type' to the tx_ch_cfg_req message which should be

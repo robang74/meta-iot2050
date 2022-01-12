@@ -1,0 +1,37 @@
+From 1e6597a78e1d0f71604fe2141e7213a909031f19 Mon Sep 17 00:00:00 2001
+From: chao zeng <chao.zeng@siemens.com>
+Date: Wed, 16 Mar 2022 10:34:51 +0800
+Subject: [PATCH 123/123] arm64: dts :ti: iot2050:add overlays for various
+ serdes protocols
+
+Add overlays for various serdes protocols on IOT2050 M.2 Board.
+
+Building device tree fragments requires passing the "-@" argument to
+dtc
+
+Signed-off-by: chao zeng <chao.zeng@siemens.com>
+---
+ arch/arm64/boot/dts/ti/Makefile | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/ti/Makefile b/arch/arm64/boot/dts/ti/Makefile
+index 3de28e26aa94..5f26d60cec8b 100644
+--- a/arch/arm64/boot/dts/ti/Makefile
++++ b/arch/arm64/boot/dts/ti/Makefile
+@@ -6,6 +6,13 @@
+ # Copyright (C) 2016-2020 Texas Instruments Incorporated - https://www.ti.com/
+ #
+ 
++# required for overlay support
++DTC_FLAGS_k3-am6548-iot2050-advanced-m2 := -@
++DTC_FLAGS_k3-am654-iot2050-bkey-pciex2 := -@
++DTC_FLAGS_k3-am654-iot2050-bkey-usb3-ekey-pcie := -@
++DTC_FLAGS_k3-am654-iot2050-bkey-pcie-ekey-pcie := -@
++
++
+ dtb-$(CONFIG_ARCH_K3) += k3-am654-base-board.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am6528-iot2050-basic.dtb
+ dtb-$(CONFIG_ARCH_K3) += k3-am6528-iot2050-basic-pg2.dtb
+-- 
+2.34.1
+
