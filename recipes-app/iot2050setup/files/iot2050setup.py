@@ -169,12 +169,19 @@ class PeripheralsMenu:
         self.config = self.getConfig()
 
     def show(self):
+        if self.topmenu.boardType == 'IOT2050 Advanced M2':
+            menuItems=[('Configure External COM Ports', self.configureExternalSerialMode),
+                    ('Configure Arduino I/O', self.configureArduinoIoMode),
+                    ('Configure M.2 Connector', self.configM2Connector)]
+        else:
+            menuItems=[('Configure External COM Ports', self.configureExternalSerialMode),
+                    ('Configure Arduino I/O', self.configureArduinoIoMode)]
+
         while True:
             action, selection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
                                                     title='Peripherals',
                                                     text='',
-                                                    items=[('Configure External COM Ports', self.configureExternalSerialMode),
-                                                           ('Configure Arduino I/O', self.configureArduinoIoMode)],
+                                                    items=menuItems,
                                                     buttons=[('Back', 'back', 'ESC')])
             if action == 'back':
                 return
@@ -601,6 +608,59 @@ class PeripheralsMenu:
             return default
         return 'on' if rdgroup.getSelection() else 'off'
 
+    def currentM2Select(self):
+        manual_config = subprocess.check_output("fw_printenv maunal_config_m2",shell=True).decode('utf-8')
+        if  manual_config:
+            overlays_select = subprocess.check_output("fw_printenv m2_overlays",shell=True).decode('utf-8')
+            if 'ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dtbo' in overlays_select:
+                return 1
+            elif 'ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dtbo' in overlays_select:
+                return 2
+            elif 'ti/k3-am654-iot2050-bkey-pciex2.dtbo' in overlays_select:
+                return 3
+        else:
+            return 0
+
+    def m2AutoDetect(self):
+        subprocess.call("fw_setenv m2_manual_config",shell=True)
+        subprocess.call("fw_setenv m2_overlays",shell=True )
+
+    def m2_select_2(self):
+        subprocess.call("fw_setenv m2_manual_config  y",shell=True)
+        subprocess.call("fw_setenv m2_overlays  ti/k3-am654-iot2050-bkey-usb3-ekey-pcie.dtbo",shell=True)
+
+    def m2_select_3(self):
+        subprocess.call("fw_setenv m2_manual_config  y",shell=True)
+        subprocess.call("fw_setenv m2_overlays  ti/k3-am654-iot2050-bkey-pcie-ekey-pcie.dtbo",shell=True)
+
+    def m2_select_4(self):
+        subprocess.call("fw_setenv m2_manual_config  y",shell=True)
+        subprocess.call("fw_setenv m2_overlays  ti/k3-am654-iot2050-bkey-pciex2.dtbo",shell=True)
+
+
+    def configM2Connector(self):
+        while True:
+            m2Info = "Option | B-KEY | E-KEY | Recommend"
+            m2Capabililty = [('1    |       AutoDetect ',self.m2AutoDetect),
+                                ('2    | USB3.0 | PCIE | 5G WIFI/BT', self.m2_select_2),
+                                ('3    | PCIE   | PCIE | 5G WIFI/BT', self.m2_select_3),
+                                ('4    | PCIEx2 | ---- | SSD',        self.m2_select_4)]
+
+            action, selection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
+                                title="M2 Advaced Configure",
+                                text=m2Info,
+                                items=m2Capabililty,
+                                buttons=[('Ok', 'ok'),('Back', 'back', 'ESC')],
+                                default=self.currentM2Select())
+
+            if action == 'back':
+                return
+            selection()
+
+            ButtonChoiceWindow(screen=self.topmenu.gscreen,
+                title='Note',
+                text='You need to power cycle the device for the changes to take effect',
+                buttons=['Ok'])
 
 class TerminalResize:
     """
