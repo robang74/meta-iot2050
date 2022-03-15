@@ -1,7 +1,7 @@
-From 0d7b443c67bfeaaed6e0d768c10584fd4a3d36d2 Mon Sep 17 00:00:00 2001
+From 5bdff3a1ff5f4e53d2843e20cac23acc95e6ebaf Mon Sep 17 00:00:00 2001
 From: chao zeng <chao.zeng@siemens.com>
 Date: Fri, 14 Jan 2022 14:22:14 +0800
-Subject: [PATCH 123/123] HACK: kbuild: generate __symbol_ node in the dtb file
+Subject: [PATCH 123/124] HACK: kbuild: generate __symbol_ node in the dtb file
 
 add the build -@ to generate __symbol__ node, lacking this
 node,dtbo can not apply to the base dtb.
@@ -26,5 +26,5 @@ index 3c62e7670144..da8c9b85c3a6 100644
  quiet_cmd_dt_S_dtb= DTB     $@
  cmd_dt_S_dtb=						\
 -- 
-2.34.1
+2.25.1
 

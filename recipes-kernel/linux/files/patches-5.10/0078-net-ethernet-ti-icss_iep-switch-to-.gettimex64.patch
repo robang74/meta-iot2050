@@ -1,7 +1,7 @@
-From b013972a7dbf8f54c5962f2c7c2df62147aab2ab Mon Sep 17 00:00:00 2001
+From 2c4727db4c54b1dc61750b2be072e47cb4c1ae35 Mon Sep 17 00:00:00 2001
 From: Grygorii Strashko <grygorii.strashko@ti.com>
 Date: Thu, 29 Apr 2021 18:13:35 +0300
-Subject: [PATCH 078/123] net: ethernet: ti: icss_iep: switch to .gettimex64()
+Subject: [PATCH 078/124] net: ethernet: ti: icss_iep: switch to .gettimex64()
 
 The .gettime64() is deprecated by commit 916444df305e ("ptp: deprecate
 gettime64() in favor of gettimex64()").
@@ -95,5 +95,5 @@ index e2663dd5cf38..c0497b448d68 100644
  	.enable		= icss_iep_ptp_enable,
  };
 -- 
-2.34.1
+2.25.1
 

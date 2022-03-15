@@ -1,7 +1,7 @@
-From d63fcf6b84a945b1fdd2c457b8e94e5c66bb6f04 Mon Sep 17 00:00:00 2001
+From 15b3b23531f32cb6ab08cbe6b828455c2f7c06ed Mon Sep 17 00:00:00 2001
 From: Grygorii Strashko <grygorii.strashko@ti.com>
 Date: Sat, 29 Aug 2020 21:41:39 +0300
-Subject: [PATCH 002/123] arm64: dts: ti: k3-am65: ringacc: drop ti,
+Subject: [PATCH 002/124] arm64: dts: ti: k3-am65: ringacc: drop ti,
  dma-ring-reset-quirk
 
 Remove obsolete "ti,dma-ring-reset-quirk" Ringacc DT property.
@@ -39,5 +39,5 @@ index 29aaf8dca6f6..044042b166d9 100644
  			ti,sci-dev-id = <195>;
  			msi-parent = <&inta_main_udmass>;
 -- 
-2.34.1
+2.25.1
 

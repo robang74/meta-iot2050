@@ -1,7 +1,7 @@
-From ddac746d2380952d1a21b5525e0c14b269037e5f Mon Sep 17 00:00:00 2001
+From e41aae86678f777d9594e0ab4cfbbaa64aaf21df Mon Sep 17 00:00:00 2001
 From: Grygorii Strashko <grygorii.strashko@ti.com>
 Date: Tue, 18 May 2021 23:37:27 +0300
-Subject: [PATCH 089/123] net: ethernet: ti: icss_iep: use readl() in
+Subject: [PATCH 089/124] net: ethernet: ti: icss_iep: use readl() in
  icss_iep_get_count_low/hi()
 
 Use readl() in icss_iep_get_count_low/hi() to speed up hot path.
@@ -35,5 +35,5 @@ index 51f8717fc446..23e72e0ffe46 100644
  	return val;
  }
 -- 
-2.34.1
+2.25.1
 

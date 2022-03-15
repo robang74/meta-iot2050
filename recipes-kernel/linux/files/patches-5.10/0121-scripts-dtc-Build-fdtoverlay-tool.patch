@@ -1,7 +1,7 @@
-From 2b14aa43f79131f4163fd3461aa0cdd5bf18e7db Mon Sep 17 00:00:00 2001
+From 4eb6912e53233984b89605a13906a3a1e8098dc4 Mon Sep 17 00:00:00 2001
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Date: Fri, 29 Jan 2021 12:54:06 +0530
-Subject: [PATCH 121/123] scripts: dtc: Build fdtoverlay tool
+Subject: [PATCH 121/124] scripts: dtc: Build fdtoverlay tool
 
 commit 0da6bcd9fcc021ff2d6cd7c8173f42dcdff6a00b upstream.
 
@@ -47,5 +47,5 @@ index 4852bf44e913..c8c21e0f2531 100644
  HOST_EXTRACFLAGS += -I $(srctree)/$(src)/libfdt
  
 -- 
-2.34.1
+2.25.1
 

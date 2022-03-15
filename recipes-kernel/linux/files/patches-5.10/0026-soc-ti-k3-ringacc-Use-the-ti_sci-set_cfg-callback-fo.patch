@@ -1,7 +1,7 @@
-From cf54be88e45c9a93bd7314a7414c6483ef3c6740 Mon Sep 17 00:00:00 2001
+From 44984fd272713653c38ea6c11cca288f73d56470 Mon Sep 17 00:00:00 2001
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
 Date: Sun, 25 Oct 2020 12:10:07 -0700
-Subject: [PATCH 026/123] soc: ti: k3-ringacc: Use the ti_sci set_cfg callback
+Subject: [PATCH 026/124] soc: ti: k3-ringacc: Use the ti_sci set_cfg callback
  for ring configuration
 
 Switch to the new set_cfg to configure the ring.
@@ -142,5 +142,5 @@ index 1147dc4c1d59..9ddd77113c5a 100644
  	return ret;
  }
 -- 
-2.34.1
+2.25.1
 

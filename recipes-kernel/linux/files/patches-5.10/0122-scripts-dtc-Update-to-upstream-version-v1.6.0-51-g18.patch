@@ -1,7 +1,7 @@
-From 5169b7666bfb0be113cf08c736a7395190e17689 Mon Sep 17 00:00:00 2001
+From cb2184bc59f69f953596c91b1ca66221f34779c4 Mon Sep 17 00:00:00 2001
 From: Rob Herring <robh@kernel.org>
 Date: Wed, 3 Feb 2021 15:26:03 -0600
-Subject: [PATCH 122/123] scripts/dtc: Update to upstream version
+Subject: [PATCH 122/124] scripts/dtc: Update to upstream version
  v1.6.0-51-g183df9e9c2b9
 
 This adds the following commits from upstream:
@@ -989,5 +989,5 @@ index 4e93c12dc658..e63d32fe142a 100644
  
  	/* Emit the property name */
 -- 
-2.34.1
+2.25.1
 

@@ -1,7 +1,7 @@
-From 91bba19462d4dc6c5643f61093b6db9c09cf636b Mon Sep 17 00:00:00 2001
+From be21fab3f8cbd66f6a7127ec2c6300af23f87f59 Mon Sep 17 00:00:00 2001
 From: Johan Hovold <johan@kernel.org>
 Date: Mon, 16 Nov 2020 17:18:26 +0100
-Subject: [PATCH 114/123] USB: serial: cp210x: clean up dtr_rts()
+Subject: [PATCH 114/124] USB: serial: cp210x: clean up dtr_rts()
 
 Clean up dtr_rts() by renaming the port parameter and adding missing
 whitespace.
@@ -41,5 +41,5 @@ index c82db6442193..bb44096b2614 100644
  
  static int cp210x_tiocmget(struct tty_struct *tty)
 -- 
-2.34.1
+2.25.1
 

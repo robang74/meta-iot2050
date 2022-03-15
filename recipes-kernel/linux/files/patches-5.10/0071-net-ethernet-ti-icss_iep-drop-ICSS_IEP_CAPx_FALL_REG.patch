@@ -1,7 +1,7 @@
-From 599e92d2127119c546f76ac83fad38ab449ab199 Mon Sep 17 00:00:00 2001
+From 9ea7923a8a71030ba1fee77d470c78ab6052093a Mon Sep 17 00:00:00 2001
 From: Grygorii Strashko <grygorii.strashko@ti.com>
 Date: Thu, 29 Apr 2021 18:13:28 +0300
-Subject: [PATCH 071/123] net: ethernet: ti: icss_iep: drop
+Subject: [PATCH 071/124] net: ethernet: ti: icss_iep: drop
  ICSS_IEP_CAPx_FALL_REGy
 
 ICSS_IEP_CAPx_FALL_REGy are not used, but cause indexation issues in
@@ -80,5 +80,5 @@ index 22034d41c988..60a284c6c0c9 100644
  		[ICSS_IEP_CMP_CFG_REG] = 0x40,
  		[ICSS_IEP_CMP_STAT_REG] = 0x44,
 -- 
-2.34.1
+2.25.1
 

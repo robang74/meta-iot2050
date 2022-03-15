@@ -1,7 +1,7 @@
-From 1c8ae4a4bb2c171bed235b917dc113dd71523252 Mon Sep 17 00:00:00 2001
+From ccb1552ed13d3821050bdf189ee14b0239962982 Mon Sep 17 00:00:00 2001
 From: Su Baocheng <baocheng.su@siemens.com>
 Date: Tue, 22 Dec 2020 15:05:56 +0800
-Subject: [PATCH 102/123] WIP: feat:extend led panic-indicator on and off
+Subject: [PATCH 102/124] WIP: feat:extend led panic-indicator on and off
 
 WIP because upstream strategy is still under discussion.
 
@@ -124,5 +124,5 @@ index 6a8d6409c993..d84423d42f89 100644
  	int 		num_leds;
  	const struct gpio_led *leds;
 -- 
-2.34.1
+2.25.1
 

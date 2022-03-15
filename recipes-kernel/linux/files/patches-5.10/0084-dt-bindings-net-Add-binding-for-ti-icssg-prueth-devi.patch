@@ -1,7 +1,7 @@
-From c8f7cd896fd216b10cfcc5f071d9234da7bba3cf Mon Sep 17 00:00:00 2001
+From f67789a1d7534c06e54109f63d73670a72a85595 Mon Sep 17 00:00:00 2001
 From: Roger Quadros <rogerq@ti.com>
 Date: Tue, 18 May 2021 23:37:22 +0300
-Subject: [PATCH 084/123] dt-bindings: net: Add binding for ti,icssg-prueth
+Subject: [PATCH 084/124] dt-bindings: net: Add binding for ti,icssg-prueth
  device
 
 This is the DT binding document for the ICSSG Dual-EMAC Ethernet
@@ -149,5 +149,5 @@ index 000000000000..67609e26afa5
 +		};
 +	};
 -- 
-2.34.1
+2.25.1
 

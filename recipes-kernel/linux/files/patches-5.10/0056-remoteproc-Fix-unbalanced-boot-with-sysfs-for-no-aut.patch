@@ -1,7 +1,7 @@
-From 49e95121f70fbf9d4fe0e1285343e0f597232a51 Mon Sep 17 00:00:00 2001
+From b3d4b9c893897c0d3d6b872b32311e36647449b0 Mon Sep 17 00:00:00 2001
 From: Suman Anna <s-anna@ti.com>
 Date: Fri, 20 Nov 2020 21:01:54 -0600
-Subject: [PATCH 056/123] remoteproc: Fix unbalanced boot with sysfs for no
+Subject: [PATCH 056/124] remoteproc: Fix unbalanced boot with sysfs for no
  auto-boot rprocs
 
 The remoteproc core performs automatic boot and shutdown of a remote
@@ -73,5 +73,5 @@ index 1dbef895e65e..3b05230641c8 100644
  		dev_err(&rproc->dev, "Unrecognised option: %s\n", buf);
  		ret = -EINVAL;
 -- 
-2.34.1
+2.25.1
 

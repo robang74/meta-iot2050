@@ -1,7 +1,7 @@
-From ba478d3cc733d21f5f3bc381cc4283b50e0e7a5b Mon Sep 17 00:00:00 2001
+From 7562209816c78c209e640d8d1e3cf7fcf66bb1fb Mon Sep 17 00:00:00 2001
 From: chao zeng <chao.zeng@siemens.com>
 Date: Thu, 16 Dec 2021 15:09:25 +0800
-Subject: [PATCH 118/123] arm64: dts: ti: Indicate the green light is off when
+Subject: [PATCH 118/124] arm64: dts: ti: Indicate the green light is off when
  panic
 
 The green light is out of control when panic occurs.
@@ -25,5 +25,5 @@ index 34a4bcec204a..733d6925c613 100644
  
  		user-led1-red {
 -- 
-2.34.1
+2.25.1
 

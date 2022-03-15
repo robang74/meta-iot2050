@@ -1,7 +1,7 @@
-From 2b989365390cf8766a897e90ee3f9001555edbad Mon Sep 17 00:00:00 2001
+From cab3a5b68e2e3067b42246b462fc2110c434d958 Mon Sep 17 00:00:00 2001
 From: Johan Hovold <johan@kernel.org>
 Date: Mon, 16 Nov 2020 17:18:22 +0100
-Subject: [PATCH 110/123] USB: serial: cp210x: clean up line-control handling
+Subject: [PATCH 110/124] USB: serial: cp210x: clean up line-control handling
 
 Update the line-control settings in one request unconditionally instead
 of setting the word-length, parity and stop-bit settings separately.
@@ -151,5 +151,5 @@ index 6786380962c9..c64fe0b0b9be 100644
  		struct cp210x_flow_ctl flow_ctl;
  		u32 ctl_hs;
 -- 
-2.34.1
+2.25.1
 

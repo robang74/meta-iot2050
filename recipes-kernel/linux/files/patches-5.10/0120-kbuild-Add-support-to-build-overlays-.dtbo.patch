@@ -1,7 +1,7 @@
-From 91fcdf16ec9e1c580f57b006c629c9a479c9e0b2 Mon Sep 17 00:00:00 2001
+From b7ea0a7cc97f0462b2ec3c3bddf15bc16387d25e Mon Sep 17 00:00:00 2001
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Date: Fri, 29 Jan 2021 12:54:08 +0530
-Subject: [PATCH 120/123] kbuild: Add support to build overlays (%.dtbo)
+Subject: [PATCH 120/124] kbuild: Add support to build overlays (%.dtbo)
 
 Add support for building DT overlays (%.dtbo). The overlay's source file
 will have the usual extension, i.e. .dts, though the blob will have
@@ -92,5 +92,5 @@ index 94133708889d..3c62e7670144 100644
  DT_BINDING_DIR := Documentation/devicetree/bindings
  # DT_TMP_SCHEMA may be overridden from Documentation/devicetree/bindings/Makefile
 -- 
-2.34.1
+2.25.1
 
