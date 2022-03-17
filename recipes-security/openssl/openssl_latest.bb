@@ -11,7 +11,7 @@
 inherit dpkg
 
 SRC_URI = " \
-    apt://${PN}/${BASE_DISTRO_CODENAME} \
+    apt://${PN}/${BASE_DISTRO_CODENAME}-security \
     file://0001-make-bnrand_range-reliable-with-deterministic-run-ti.patch;apply=no \
     "
 CHANGELOG_V="<orig-version>+iot2050"
