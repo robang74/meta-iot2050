@@ -4,7 +4,6 @@
 #
 # This file is subject to the terms and conditions of the MIT License.  See
 # COPYING.MIT file in the top-level directory.
-import traceback
 from snack import *
 import subprocess
 import re
@@ -161,24 +160,10 @@ class SoftwareMenu:
             subprocess.call('systemctl stop ' + name, shell=True, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
             subprocess.call('systemctl disable ' + name, shell=True, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
 
-
-class PeripheralsMenu:
-    def __init__(self, topmenu):
-        self.topmenu = topmenu
+class ConfigUtility:
+    def __init__(self):
         self.configureFile = '/etc/board-configuration.json'
         self.config = self.getConfig()
-
-    def show(self):
-        while True:
-            action, selection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
-                                                    title='Peripherals',
-                                                    text='',
-                                                    items=[('Configure External COM Ports', self.configureExternalSerialMode),
-                                                           ('Configure Arduino I/O', self.configureArduinoIoMode)],
-                                                    buttons=[('Back', 'back', 'ESC')])
-            if action == 'back':
-                return
-            selection()
 
     def getConfig(self):
         with open(self.configureFile, 'r') as f:
@@ -268,214 +253,22 @@ class PeripheralsMenu:
         elif self.checkPullModeConfig('Hiz', index):
             return 'Hiz'
 
-    def configureArduinoGpio(self):
-        gpioIndex = 0
-        dirIndex = 0
-        pullmodeIndex = 0
-        while True:
-            gm = GridForm(self.topmenu.gscreen,    # screen
-                         "Enable GPIO",            # title
-                         1, 27)                    # 27x1 grid
-            g = GridForm(self.topmenu.gscreen,     # screen
-                         "Enable GPIO",            # title
-                        4, 2)                      # 2x4 grid
-            gm.add(Label('Gpio   | Direction | Pull Mode'), 0, 0)
-            gm.add(Label('-------+-----------+----------'), 0, 1)
-            for i in range(0, 20):
-                gpio = 'Gpio{:<3}'.format(str(i))
-                direction = ' {:<10}'.format(self.getDirection(i))
-                pullmode = ' {:<9}'.format(self.getPullMode(i))
-                label = '%s|%s|%s' % (gpio, direction, pullmode)
-                gm.add(Label(label), 0, i + 2)
-            gm.add(Label(' '), 0, 23)
-            lbGpio = Listbox(height = 1, scroll = 0, returnExit = 0, width = 6, border = 0)
-            for i in range(0, 20):
-                lbGpio.append('Gpio' + str(i), i)
-            lbGpio.setCurrent(gpioIndex)
-            lbDir = Listbox(height = 1, scroll = 0, returnExit = 0, width = 11, border = 0)
-            lbDir.append('Input', 0)
-            lbDir.append('Output', 1)
-            lbDir.setCurrent(dirIndex)
-            lbPullMode = Listbox(height = 1, scroll = 0, returnExit = 0, width = 10, border = 0)
-            lbPullMode.append('Hiz', 0)
-            lbPullMode.append('Pull-up', 1)
-            lbPullMode.append('Pull-down', 2)
-            lbPullMode.setCurrent(pullmodeIndex)
-            g.add(Label('Gpio:  '), 0, 0)
-            g.add(Label('Direction:  '), 1, 0)
-            g.add(Label('Pull-Mode: '), 2, 0)
-            g.add(lbGpio, 0, 1)
-            g.add(lbDir, 1, 1)
-            g.add(lbPullMode, 2, 1)
-            btnOk = ButtonBar(screen = self.topmenu.gscreen, buttonlist = [('Ok', 1)], compact = 1)
-            g.add(btnOk, 3, 1)
-            gm.add(g, 0, 24)
-            gm.add(Label(' '), 0, 25)
-            btnBack = ButtonBar(screen = self.topmenu.gscreen, buttonlist = [('Back', 'back', 'ESC')])
-            gm.add(btnBack, 0, 26)
-            result = gm.runOnce()
-            if btnBack.buttonPressed(result) == 'back':
-                return
-            def selectedPullMode(item):
-                if item == 2:
-                    return 'Pull-down'
-                elif item == 1:
-                    return 'Pull-up'
-                elif item == 0:
-                    return 'Hiz'
-            if btnOk.buttonPressed(result) == 1:
-                gpioIndex = lbGpio.current()
-                dirIndex = lbDir.current()
-                pullmodeIndex = lbPullMode.current()
-                if dirIndex == 0: # input
-                    self.setPinmuxOfUserConfig('GPIO_Input', gpioIndex)
-                    self._setPullModeOfUserConfig(gpioIndex, selectedPullMode(pullmodeIndex))
-                    self.setPinmuxToGpio('GPIO_Input', gpioIndex)
-                elif dirIndex == 1: # output
-                    self.setPinmuxOfUserConfig('GPIO_Output', gpioIndex)
-                    self._setPullModeOfUserConfig(gpioIndex, selectedPullMode(pullmodeIndex))
-                    self.setPinmuxToGpio('GPIO_Output', gpioIndex)
-                self.saveConfig(self.config)
 
-    def configureArduinoI2c(self):
-        btnchoicewind = ButtonChoiceWindow(screen=self.topmenu.gscreen,
-                                           title='Enable I2C on IO18 & IO19',
-                                           text='',
-                                           buttons=['Enable', 'Disable', ('Cancel', 'ESC')],
-                                           width=40)
-        if btnchoicewind == 'cancel':
-            return
-        elif btnchoicewind == 'enable':
-            i2c = mraa.I2c(0)
-            self.setPinmuxOfUserConfig('I2C')
-        elif (btnchoicewind == 'disable') and self.checkPinmuxConfig('I2C'):
-            self.resetPinmuxOfUserConfig('I2C')
-        self.saveConfig(self.config)
+class ExternalSerialMode(ConfigUtility):
+    def __init__(self,topmenu):
+        self.topmenu = topmenu
+        super().__init__()
 
-    def configureArduinoSpi(self):
-        btnchoicewind = ButtonChoiceWindow(screen=self.topmenu.gscreen,
-                                           title='Enable SPI on IO10-IO13',
-                                           text='',
-                                           buttons=['Enable', 'Disable', ('Cancel', 'ESC')],
-                                           width=40)
-        if btnchoicewind == 'cancel':
-            return
-        elif btnchoicewind == 'enable':
-            spi = mraa.Spi(0)
-            self.setPinmuxOfUserConfig('SPI')
-        elif btnchoicewind == 'disable' and self.checkPinmuxConfig('SPI'):
-            self.resetPinmuxOfUserConfig('SPI')
-        self.saveConfig(self.config)
+    def show(self):
+        if self.topmenu.boardType.startswith('IOT2050 Basic'):
+            modeItems = [('RS232', self.configureBasicRs232SerialMode),
+                        ('RS485', self.configureBasicRs485SerialMode),
+                        ('RS422', self.configureBasicRs422SerialMode)]
+        elif self.topmenu.boardType.startswith('IOT2050 Advanced'):
+            modeItems = [('RS232', self.configureAdvancedRs232SerialMode),
+                        ('RS485', self.configureAdvancedRs485SerialMode),
+                        ('RS422', self.configureAdvancedRs422SerialMode)]
 
-    def configureArduinoUart(self):
-        ckboxtree = CheckboxTree(height=2, scroll=0)
-        ckboxtree.append(text='RX & TX',   item=1, selected=self.checkPinmuxConfig('UART_RX'))
-        ckboxtree.append(text='CTS & RTS', item=2, selected=self.checkPinmuxConfig('UART_CTS'))
-        buttonbar = ButtonBar(screen=self.topmenu.gscreen, buttonlist=[('Ok', 'ok'), ('Cancel', 'cancel', 'ESC')])
-        g = GridForm(self.topmenu.gscreen,      # screen
-                     'Enable UART on IO0-IO3',  # title
-                      1, 2)                     # 2x1 grid
-        g.add(ckboxtree, 0, 0)
-        g.add(buttonbar, 0, 1)
-        result = g.runOnce()
-        if buttonbar.buttonPressed(result) == 'cancel':
-            return
-
-        selected = ckboxtree.getSelection()
-        if 1 in selected:
-            uart = mraa.Uart(0)
-            uart.setFlowcontrol(False, True if 2 in selected else False)
-            self.setPinmuxOfUserConfig('UART_RX')
-            self.setPinmuxOfUserConfig('UART_TX')
-            if 2 in selected:
-                self.setPinmuxOfUserConfig('UART_CTS')
-                self.setPinmuxOfUserConfig('UART_RTS')
-            else:
-                self.resetPinmuxOfUserConfig('UART_CTS')
-                self.resetPinmuxOfUserConfig('UART_RTS')
-        else:
-            self.resetPinmuxOfUserConfig('UART')
-        self.saveConfig(self.config)
-
-    def configureArduinoPwm(self):
-        ckboxtree = CheckboxTree(height=6, scroll=0)
-        ckboxtree.append(text='PWM 4', item=4, selected=self.checkPinmuxConfig('PWM_4'))
-        ckboxtree.append(text='PWM 5', item=5, selected=self.checkPinmuxConfig('PWM_5'))
-        ckboxtree.append(text='PWM 6', item=6, selected=self.checkPinmuxConfig('PWM_6'))
-        ckboxtree.append(text='PWM 7', item=7, selected=self.checkPinmuxConfig('PWM_7'))
-        ckboxtree.append(text='PWM 8', item=8, selected=self.checkPinmuxConfig('PWM_8'))
-        ckboxtree.append(text='PWM 9', item=9, selected=self.checkPinmuxConfig('PWM_9'))
-        buttonbar = ButtonBar(screen=self.topmenu.gscreen, buttonlist=[('Ok', 'ok'), ('Cancel', 'cancel', 'ESC')])
-        g = GridForm(self.topmenu.gscreen,      # screen
-                     'Enable PWM on IO4-IO9',   # title
-                      1, 2)                     # 1x1 grid
-        g.add(ckboxtree, 0, 0)
-        g.add(buttonbar, 0, 1)
-        result = g.runOnce()
-        if buttonbar.buttonPressed(result) == 'cancel':
-            return
-        selected = ckboxtree.getSelection()
-        for n in range(4, 10):
-            if n in selected:
-                pwm = mraa.Pwm(n)
-                self.setPinmuxOfUserConfig('PWM_' + str(n))
-            else:
-                self.resetPinmuxOfUserConfig('PWM_' + str(n))
-        self.saveConfig(self.config)
-
-    def configureArduinoAdc(self):
-        ckboxtree = CheckboxTree(height=6, scroll=0)
-        ckboxtree.append(text='ADC 0', item=0, selected=self.checkPinmuxConfig('ADC_0'))
-        ckboxtree.append(text='ADC 1', item=1, selected=self.checkPinmuxConfig('ADC_1'))
-        ckboxtree.append(text='ADC 2', item=2, selected=self.checkPinmuxConfig('ADC_2'))
-        ckboxtree.append(text='ADC 3', item=3, selected=self.checkPinmuxConfig('ADC_3'))
-        ckboxtree.append(text='ADC 4', item=4, selected=self.checkPinmuxConfig('ADC_4'))
-        ckboxtree.append(text='ADC 5', item=5, selected=self.checkPinmuxConfig('ADC_5'))
-        buttonbar = ButtonBar(screen=self.topmenu.gscreen, buttonlist=[('Ok', 'ok'), ('Cancel', 'cancel', 'ESC')])
-        g = GridForm(self.topmenu.gscreen,                  # screen
-                     'Enable ADC on IO14-IO19',   # title
-                     1, 2)                                  # 1x1 grid
-        g.add(ckboxtree, 0, 0)
-        g.add(buttonbar, 0, 1)
-        result = g.runOnce()
-        if buttonbar.buttonPressed(result) == 'cancel':
-            return
-        selected = ckboxtree.getSelection()
-        for n in range(0, 6):
-            if n in selected:
-                aio = mraa.Aio(n)
-                self.setPinmuxOfUserConfig('ADC_' + str(n))
-            else:
-                self.resetPinmuxOfUserConfig('ADC_' + str(n))
-        self.saveConfig(self.config)
-
-    def configureArduinoIoMode(self):
-        while True:
-            self.config = self.getConfig()
-            ioInfor = ' Pin  | Current    | Pinmux\n -----+------------+-------------------------------------------\n'
-            for i in range(0, 20):
-                ioInfor += ' IO{:<3}'.format(str(i))
-                ioInfor += '| {:<11}'.format(self.config['User_configuration']['IO' + str(i) + '_MODE'])
-                ioInfor += '| ' + ' | '.join(self.config['Arduino_pinmux_map']['IO' + str(i)])
-                ioInfor += '\n'
-            action, selection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
-                                                    title='Configure Arduino I/O',
-                                                    text=ioInfor,
-                                                    items=[('Enable GPIO', self.configureArduinoGpio),
-                                                           ('Enable I2C on IO18 & IO19', self.configureArduinoI2c),
-                                                           ('Enable SPI on IO10-IO13', self.configureArduinoSpi),
-                                                           ('Enable UART on IO0-IO3', self.configureArduinoUart),
-                                                           ('Enable PWM on IO4-IO9', self.configureArduinoPwm),
-                                                           ('Enable ADC on IO14-IO19', self.configureArduinoAdc)],
-                                                    buttons=[('Back', 'back', 'ESC')],
-                                                    width=68)
-            if action == 'back':
-                return
-            selection()
-
-    def configureExternalSerialMode(self):
-        self.config = self.getConfig()
-        modeItems = ['RS232', 'RS485', 'RS422']
         modeAction, modeSelection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
                                                         title='Configure External COM Ports',
                                                         text='Select a mode:',
@@ -484,23 +277,60 @@ class PeripheralsMenu:
                                                         default=self.currentMode())
         if modeAction == 'cancel':
             return
-        switchMode = modeItems[modeSelection]
-        self.terminateStatus = ''
-        if (switchMode == 'RS485') or (switchMode == 'RS422'):
-            self.terminateStatus = self.selectTerminate()
+        modeSelection()
+
+        if self.topmenu.boardType == 'IOT2050 Advanced':
+            ButtonChoiceWindow(screen=self.topmenu.gscreen,
+                    title='Note',
+                    text='You need to power cycle the device for the changes to take effect',
+                    buttons=['Ok'])
+
+    def serialModeSelection(self,mode,terminateStatus=''):
         if self.topmenu.boardType.startswith('IOT2050 Basic'):
-            self.setBasicBoard(switchMode)
+            subprocess.call('switchserialmode ttyuart -D /dev/ttyS2 -m ' + mode, shell=True)
         elif self.topmenu.boardType.startswith('IOT2050 Advanced'):
-            self.setAdvancedBoard(switchMode)
-        else:
-            return
-        terminateOpt = ' -t' if self.terminateStatus == 'on' else ''
-        subprocess.call('switchserialmode -m ' + switchMode + terminateOpt, shell=True)
-        self.config['User_configuration']['External_Serial_Current_Mode'] = switchMode
+            if mode == 'RS232':
+                command = 'switchserialmode cp210x -D cp2102n24 -m gpio -v 0'
+            elif mode == 'RS485':
+                command = 'switchserialmode cp210x -D cp2102n24 -m RS485 -g 1'
+            elif mode == 'RS422':
+                command = 'switchserialmode cp210x -D cp2102n24 -m gpio -v 1'
+            subprocess.call(command, shell=True)
+
+        terminateOpt = ' -t' if terminateStatus == 'on' else ''
+        if terminateStatus == 'on' or terminateStatus == 'off':
+            self.config['User_configuration']['External_Serial_Terminate'] = terminateStatus
+        self.config['User_configuration']['External_Serial_Init_Mode'] = mode
+        self.config['User_configuration']['External_Serial_Current_Mode'] = mode
         self.saveConfig(self.config)
+
+        subprocess.call('switchserialmode -m ' + mode + terminateOpt, shell=True)
         subprocess.call('sync', shell=True)
         if self.topmenu.boardType == 'IOT2050 Advanced PG2':
             subprocess.call('switchserialmode -r', shell=True)
+
+    def configureBasicRs232SerialMode(self):
+        self.serialModeSelection('RS232')
+
+    def configureBasicRs485SerialMode(self):
+        terminateStatus = self.selectTerminate()
+        self.serialModeSelection('RS485', terminateStatus)
+
+    def configureBasicRs422SerialMode(self):
+        terminateStatus = self.selectTerminate()
+        self.serialModeSelection('RS422', terminateStatus)
+
+    def configureAdvancedRs232SerialMode(self):
+        self.serialModeSelection('RS232')
+
+    def configureAdvancedRs485SerialMode(self):
+        self.setRS485SetupHoldTime()
+        terminateStatus = self.selectTerminate()
+        self.serialModeSelection('RS485', terminateStatus)
+
+    def configureAdvancedRs422SerialMode(self):
+        terminateStatus = self.selectTerminate()
+        self.serialModeSelection('RS422', terminateStatus)
 
     def currentMode(self):
         mode = self.config['User_configuration']['External_Serial_Current_Mode']
@@ -511,27 +341,6 @@ class PeripheralsMenu:
         elif mode == 'RS422':
             return 2
         return 0
-
-    def setAdvancedBoard(self, mode):
-        command = ''
-        if mode == 'RS232':
-            command = 'switchserialmode cp210x -D cp2102n24 -m gpio -v 0'
-        elif mode == 'RS485':
-            command = 'switchserialmode cp210x -D cp2102n24 -m RS485 -g 1'
-        elif mode == 'RS422':
-            command = 'switchserialmode cp210x -D cp2102n24 -m gpio -v 1'
-        subprocess.call(command, shell=True)
-        self.config['User_configuration']['External_Serial_Init_Mode'] = mode
-        if self.terminateStatus == 'on' or self.terminateStatus == 'off':
-                self.config['User_configuration']['External_Serial_Terminate'] = self.terminateStatus
-        self.saveConfig(self.config)
-        if mode == 'RS485':
-            self.setRS485SetupHoldTime()
-        if self.topmenu.boardType != 'IOT2050 Advanced PG2':
-            ButtonChoiceWindow(screen=self.topmenu.gscreen,
-                            title='Note',
-                            text='You need to power cycle the device for the changes to take effect',
-                            buttons=['Ok'])
 
     def setRS485SetupHoldTime(self):
         command = 'switchserialmode cp210x -D CP2102N24 -d | grep -o -P \"setup-time\\(0x\\w*\\)\" | grep -o -P \"0x\\w*\"'
@@ -561,20 +370,6 @@ class PeripheralsMenu:
         if ('-s' in command) or ('-o' in command):
             subprocess.call(command, shell=True)
 
-    def setBasicBoard(self, mode):
-        persistentReturn = ButtonChoiceWindow(screen=self.topmenu.gscreen,
-                                              title='Configure Serial Mode',
-                                              text='Do you want to make your changes persistent?\n(Mode setting will be kept after reboot.) ',
-                                              buttons=[('Yes', 'yes'), ('No', 'no', 'ESC')],
-                                              width=40)
-        command = 'switchserialmode ttyuart -D /dev/ttyS2 -m ' + mode
-        subprocess.call(command, shell=True)
-        if persistentReturn == 'yes':
-            self.config['User_configuration']['External_Serial_Init_Mode'] = mode
-            if self.terminateStatus == 'on' or self.terminateStatus == 'off':
-                self.config['User_configuration']['External_Serial_Terminate'] = self.terminateStatus
-            self.saveConfig(self.config)
-
     def currentTerminate(self):
         terminate = self.config['User_configuration']['External_Serial_Terminate']
         if terminate == 'off':
@@ -601,6 +396,251 @@ class PeripheralsMenu:
             return default
         return 'on' if rdgroup.getSelection() else 'off'
 
+class ArduinoIoMode(ConfigUtility):
+    def __init__(self,topmenu):
+        self.topmenu = topmenu
+        super().__init__()
+
+    def show(self):
+        while True:
+            self.config = self.getConfig()
+            ioInfor = ' Pin  | Current    | Pinmux\n -----+------------+-------------------------------------------\n'
+            for i in range(0, 20):
+                ioInfor += ' IO{:<3}'.format(str(i))
+                ioInfor += '| {:<11}'.format(self.config['User_configuration']['IO' + str(i) + '_MODE'])
+                ioInfor += '| ' + ' | '.join(self.config['Arduino_pinmux_map']['IO' + str(i)])
+                ioInfor += '\n'
+            action, selection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
+                                                    title='Configure Arduino I/O',
+                                                    text=ioInfor,
+                                                    items=[('Enable GPIO', self.configureArduinoGpio),
+                                                           ('Enable I2C on IO18 & IO19', self.configureArduinoI2c),
+                                                           ('Enable SPI on IO10-IO13', self.configureArduinoSpi),
+                                                           ('Enable UART on IO0-IO3', self.configureArduinoUart),
+                                                           ('Enable PWM on IO4-IO9', self.configureArduinoPwm),
+                                                           ('Enable ADC on IO14-IO19', self.configureArduinoAdc)],
+                                                    buttons=[('Back', 'back', 'ESC')],
+                                                    width=68)
+            if action == 'back':
+                return
+            selection()
+
+    def configureArduinoGpio(self):
+        gpioIndex = 0
+        dirIndex = 0
+        pullmodeIndex = 0
+        while True:
+            gm = GridForm(self.topmenu.gscreen,    # screen
+                         "Enable GPIO",            # title
+                         1, 27)                    # 27x1 grid
+            g = GridForm(self.topmenu.gscreen,     # screen
+                         "Enable GPIO",            # title
+                        4, 2)                      # 2x4 grid
+            gm.add(Label('Gpio   | Direction | Pull Mode'), 0, 0)
+            gm.add(Label('-------+-----------+----------'), 0, 1)
+            for i in range(0, 20):
+                gpio = 'Gpio{:<3}'.format(str(i))
+                direction = ' {:<10}'.format(self.getDirection(i))
+                pullmode = ' {:<9}'.format(self.getPullMode(i))
+                label = '%s|%s|%s' % (gpio, direction, pullmode)
+                gm.add(Label(label), 0, i + 2)
+            gm.add(Label(' '), 0, 23)
+            self.ardunioLbGpio = Listbox(height = 1, scroll = 0, returnExit = 0, width = 6, border = 0)
+            for i in range(0, 20):
+                self.ardunioLbGpio.append('Gpio' + str(i), i)
+            self.ardunioLbGpio.setCurrent(gpioIndex)
+            self.ardunioLbDir = Listbox(height = 1, scroll = 0, returnExit = 0, width = 11, border = 0)
+            self.ardunioLbDir.append('Input', 0)
+            self.ardunioLbDir.append('Output', 1)
+            self.ardunioLbDir.setCurrent(dirIndex)
+            self.arduinoLbPullMode = Listbox(height = 1, scroll = 0, returnExit = 0, width = 10, border = 0)
+            self.arduinoLbPullMode.append('Hiz', 0)
+            self.arduinoLbPullMode.append('Pull-up', 1)
+            self.arduinoLbPullMode.append('Pull-down', 2)
+            self.arduinoLbPullMode.setCurrent(pullmodeIndex)
+            g.add(Label('Gpio:  '), 0, 0)
+            g.add(Label('Direction:  '), 1, 0)
+            g.add(Label('Pull-Mode: '), 2, 0)
+            g.add(self.ardunioLbGpio, 0, 1)
+            g.add(self.ardunioLbDir, 1, 1)
+            g.add(self.arduinoLbPullMode, 2, 1)
+            self.gpioArduinoBtnOk = ButtonBar(screen = self.topmenu.gscreen, buttonlist = [('Ok', 1)], compact = 1)
+            g.add(self.gpioArduinoBtnOk, 3, 1)
+            gm.add(g, 0, 24)
+            gm.add(Label(' '), 0, 25)
+            btnBack = ButtonBar(screen = self.topmenu.gscreen, buttonlist = [('Back', 'back', 'ESC')])
+            gm.add(btnBack, 0, 26)
+            self.arduinoGpioresult = gm.runOnce()
+            if btnBack.buttonPressed(self.arduinoGpioresult) == 'back':
+                return
+            if self.gpioArduinoBtnOk.buttonPressed(self.arduinoGpioresult) == 1:
+                self.arduinoGpioButtonProcess()
+
+    def arduinoGpioButtonProcess(self):
+        def selectedPullMode(item):
+            if item == 2:
+                return 'Pull-down'
+            elif item == 1:
+                return 'Pull-up'
+            elif item == 0:
+                return 'Hiz'
+
+        gpioIndex = self.ardunioLbGpio.current()
+        dirIndex = self.ardunioLbDir.current()
+        pullmodeIndex = self.arduinoLbPullMode.current()
+        if dirIndex == 0:  # input
+            self.setPinmuxOfUserConfig('GPIO_Input', gpioIndex)
+            self._setPullModeOfUserConfig(gpioIndex, selectedPullMode(pullmodeIndex))
+            self.setPinmuxToGpio('GPIO_Input', gpioIndex)
+        elif dirIndex == 1:  # output
+            self.setPinmuxOfUserConfig('GPIO_Output', gpioIndex)
+            self._setPullModeOfUserConfig(gpioIndex, selectedPullMode(pullmodeIndex))
+            self.setPinmuxToGpio('GPIO_Output', gpioIndex)
+        self.saveConfig(self.config)
+
+    def configureArduinoI2c(self):
+        self.arduinoI2cSelect = ButtonChoiceWindow(screen=self.topmenu.gscreen,
+                                           title='Enable I2C on IO18 & IO19',
+                                           text='',
+                                           buttons=['Enable', 'Disable', ('Cancel', 'ESC')],
+                                           width=40)
+        self.arduinoI2cChoice(self.arduinoI2cSelect)
+
+    def arduinoI2cChoice(self,select):
+        if select == 'cancel':
+            return
+        elif select == 'enable':
+            i2c = mraa.I2c(0)
+            self.setPinmuxOfUserConfig('I2C')
+        elif (select == 'disable') and self.checkPinmuxConfig('I2C'):
+            self.resetPinmuxOfUserConfig('I2C')
+        self.saveConfig(self.config)
+
+    def configureArduinoSpi(self):
+        self.arduinoSpiSelect = ButtonChoiceWindow(screen=self.topmenu.gscreen,
+                                           title='Enable SPI on IO10-IO13',
+                                           text='',
+                                           buttons=['Enable', 'Disable', ('Cancel', 'ESC')],
+                                           width=40)
+        self.arduinoSpiChoice(self.arduinoSpiSelect)
+
+    def arduinoSpiChoice(self,select):
+        if select == 'cancel':
+            return
+        elif select == 'enable':
+            spi = mraa.Spi(0)
+            self.setPinmuxOfUserConfig('SPI')
+        elif select == 'disable' and self.checkPinmuxConfig('SPI'):
+            self.resetPinmuxOfUserConfig('SPI')
+        self.saveConfig(self.config)
+
+    def configureArduinoUart(self):
+        self.ardunioUartChkBoxTree = CheckboxTree(height=2, scroll=0)
+        self.ardunioUartChkBoxTree.append(text='RX & TX',   item=1, selected=self.checkPinmuxConfig('UART_RX'))
+        self.ardunioUartChkBoxTree.append(text='CTS & RTS', item=2, selected=self.checkPinmuxConfig('UART_CTS'))
+        self.ardunioUartChkBoxTree.setCallback(self.ardunioUartChkBoxTreeChanged)
+        buttonbar = ButtonBar(screen=self.topmenu.gscreen, buttonlist=[('Ok', 'ok'), ('Cancel', 'cancel', 'ESC')])
+        g = GridForm(self.topmenu.gscreen,      # screen
+                     'Enable UART on IO0-IO3',  # title
+                      1, 2)                     # 2x1 grid
+        g.add(self.ardunioUartChkBoxTree, 0, 0)
+        g.add(buttonbar, 0, 1)
+        result = g.runOnce()
+        if buttonbar.buttonPressed(result) == 'cancel':
+            return
+
+    def ardunioUartChkBoxTreeChanged(self):
+        selected = self.ardunioUartChkBoxTree.getSelection()
+        if 1 in selected:
+            uart = mraa.Uart(0)
+            uart.setFlowcontrol(False, True if 2 in selected else False)
+            self.setPinmuxOfUserConfig('UART_RX')
+            self.setPinmuxOfUserConfig('UART_TX')
+            if 2 in selected:
+                self.setPinmuxOfUserConfig('UART_CTS')
+                self.setPinmuxOfUserConfig('UART_RTS')
+            else:
+                self.resetPinmuxOfUserConfig('UART_CTS')
+                self.resetPinmuxOfUserConfig('UART_RTS')
+        else:
+            self.resetPinmuxOfUserConfig('UART')
+        self.saveConfig(self.config)
+
+    def configureArduinoPwm(self):
+        self.ardunioPwmCkBoxTree = CheckboxTree(height=6, scroll=0)
+        self.ardunioPwmCkBoxTree.append(text='PWM 4', item=4, selected=self.checkPinmuxConfig('PWM_4'))
+        self.ardunioPwmCkBoxTree.append(text='PWM 5', item=5, selected=self.checkPinmuxConfig('PWM_5'))
+        self.ardunioPwmCkBoxTree.append(text='PWM 6', item=6, selected=self.checkPinmuxConfig('PWM_6'))
+        self.ardunioPwmCkBoxTree.append(text='PWM 7', item=7, selected=self.checkPinmuxConfig('PWM_7'))
+        self.ardunioPwmCkBoxTree.append(text='PWM 8', item=8, selected=self.checkPinmuxConfig('PWM_8'))
+        self.ardunioPwmCkBoxTree.append(text='PWM 9', item=9, selected=self.checkPinmuxConfig('PWM_9'))
+        self.ardunioPwmCkBoxTree.setCallback(self.ardunioPwmChkBoxTreeChanged)
+        buttonbar = ButtonBar(screen=self.topmenu.gscreen, buttonlist=[('Ok', 'ok'), ('Cancel', 'cancel', 'ESC')])
+        g = GridForm(self.topmenu.gscreen,      # screen
+                     'Enable PWM on IO4-IO9',   # title
+                      1, 2)                     # 1x1 grid
+        g.add(self.ardunioPwmCkBoxTree, 0, 0)
+        g.add(buttonbar, 0, 1)
+        result = g.runOnce()
+        if buttonbar.buttonPressed(result) == 'cancel':
+            return
+
+    def ardunioPwmChkBoxTreeChanged(self):
+        selected = self.ardunioPwmCkBoxTree.getSelection()
+        for n in range(4, 10):
+            if n in selected:
+                pwm = mraa.Pwm(n)
+                self.setPinmuxOfUserConfig('PWM_' + str(n))
+            else:
+                self.resetPinmuxOfUserConfig('PWM_' + str(n))
+        self.saveConfig(self.config)
+
+    def configureArduinoAdc(self):
+        self.arduinoAdcChkBoxTree = CheckboxTree(height=6, scroll=0)
+        self.arduinoAdcChkBoxTree.append(text='ADC 0', item=0, selected=self.checkPinmuxConfig('ADC_0'))
+        self.arduinoAdcChkBoxTree.append(text='ADC 1', item=1, selected=self.checkPinmuxConfig('ADC_1'))
+        self.arduinoAdcChkBoxTree.append(text='ADC 2', item=2, selected=self.checkPinmuxConfig('ADC_2'))
+        self.arduinoAdcChkBoxTree.append(text='ADC 3', item=3, selected=self.checkPinmuxConfig('ADC_3'))
+        self.arduinoAdcChkBoxTree.append(text='ADC 4', item=4, selected=self.checkPinmuxConfig('ADC_4'))
+        self.arduinoAdcChkBoxTree.append(text='ADC 5', item=5, selected=self.checkPinmuxConfig('ADC_5'))
+        self.arduinoAdcChkBoxTree.setCallback(self.arduinoAdcChkBoxTreeChanged)
+        buttonbar = ButtonBar(screen=self.topmenu.gscreen, buttonlist=[('Ok', 'ok'), ('Cancel', 'cancel', 'ESC')])
+        g = GridForm(self.topmenu.gscreen,                  # screen
+                     'Enable ADC on IO14-IO19',   # title
+                     1, 2)                                  # 1x1 grid
+        g.add(self.arduinoAdcChkBoxTree, 0, 0)
+        g.add(buttonbar, 0, 1)
+        result = g.runOnce()
+        if buttonbar.buttonPressed(result) == 'cancel':
+            return
+
+    def arduinoAdcChkBoxTreeChanged(self):
+        selected = self.arduinoAdcChkBoxTree.getSelection()
+        for n in range(0, 6):
+            if n in selected:
+                aio = mraa.Aio(n)
+                self.setPinmuxOfUserConfig('ADC_' + str(n))
+            else:
+                self.resetPinmuxOfUserConfig('ADC_' + str(n))
+        self.saveConfig(self.config)
+
+class PeripheralsMenu:
+    def __init__(self, topmenu):
+        self.topmenu = topmenu
+        super().__init__()
+
+    def show(self):
+        while True:
+            menuItems = [('Configure External COM Ports', ExternalSerialMode(self.topmenu)),
+                      ('Configure Arduino I/O', ArduinoIoMode(self.topmenu))]
+            action, selection = ListboxChoiceWindow(screen=self.topmenu.gscreen,
+                                                    title='Peripherals',
+                                                    text='',
+                                                    items=menuItems,
+                                                    buttons=[('Back', 'back', 'ESC')])
+            if action == 'back':
+                return
+            selection.show()
 
 class TerminalResize:
     """
