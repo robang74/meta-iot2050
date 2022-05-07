@@ -17,6 +17,22 @@ import struct
 import tty
 import termios
 import select
+import threading
+
+
+def threadDecorator(func):
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+        thread.setDaemon(True)
+        thread.start()
+        thread.join(2)
+        if thread.is_alive():
+            ButtonChoiceWindow(screen=TopMenu().gscreen,
+            title='Warnning',
+            text='Configuration may not take effect',
+            buttons=['Ok'])
+    return wrapper
+
 
 class ansicolors:
     clear = '\033[2J'
@@ -285,6 +301,7 @@ class ExternalSerialMode(ConfigUtility):
                     text='You need to power cycle the device for the changes to take effect',
                     buttons=['Ok'])
 
+    @threadDecorator
     def serialModeSelection(self,mode,terminateStatus=''):
         if self.topmenu.boardType.startswith('IOT2050 Basic'):
             subprocess.call('switchserialmode ttyuart -D /dev/ttyS2 -m ' + mode, shell=True)
@@ -476,6 +493,7 @@ class ArduinoIoMode(ConfigUtility):
             if self.gpioArduinoBtnOk.buttonPressed(self.arduinoGpioresult) == 1:
                 self.arduinoGpioButtonProcess()
 
+    @threadDecorator
     def arduinoGpioButtonProcess(self):
         def selectedPullMode(item):
             if item == 2:
@@ -506,6 +524,7 @@ class ArduinoIoMode(ConfigUtility):
                                            width=40)
         self.arduinoI2cChoice(self.arduinoI2cSelect)
 
+    @threadDecorator
     def arduinoI2cChoice(self,select):
         if select == 'cancel':
             return
@@ -524,6 +543,7 @@ class ArduinoIoMode(ConfigUtility):
                                            width=40)
         self.arduinoSpiChoice(self.arduinoSpiSelect)
 
+    @threadDecorator
     def arduinoSpiChoice(self,select):
         if select == 'cancel':
             return
@@ -549,6 +569,7 @@ class ArduinoIoMode(ConfigUtility):
         if buttonbar.buttonPressed(result) == 'cancel':
             return
 
+    @threadDecorator
     def ardunioUartChkBoxTreeChanged(self):
         selected = self.ardunioUartChkBoxTree.getSelection()
         if 1 in selected:
@@ -585,6 +606,7 @@ class ArduinoIoMode(ConfigUtility):
         if buttonbar.buttonPressed(result) == 'cancel':
             return
 
+    @threadDecorator
     def ardunioPwmChkBoxTreeChanged(self):
         selected = self.ardunioPwmCkBoxTree.getSelection()
         for n in range(4, 10):
@@ -614,6 +636,7 @@ class ArduinoIoMode(ConfigUtility):
         if buttonbar.buttonPressed(result) == 'cancel':
             return
 
+    @threadDecorator
     def arduinoAdcChkBoxTreeChanged(self):
         selected = self.arduinoAdcChkBoxTree.getSelection()
         for n in range(0, 6):
