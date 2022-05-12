@@ -1,0 +1,79 @@
+From 130cc388aeaa7544eb4d9843ba7e4571eda4bac3 Mon Sep 17 00:00:00 2001
+From: Baocheng Su <baocheng.su@siemens.com>
+Date: Thu, 12 May 2022 22:00:43 +0800
+Subject: [PATCH 24/24] arm: dts: iot2050: Use external blob file for OTP
+ update command
+
+Use external blob otpcmd.bin to replace the 0xff filled OTP update
+command block.
+
+This otpcmd.bin is generated from the customer keys.
+
+This is preparing for the secure boot on IOT2050. User can build a
+firmware image that contains the otpcmd data which will be programmed
+into the extend OTP area on next booting by following the instructions
+on device.
+
+Signed-off-by: Su Baocheng <baocheng.su@siemens.com>
+---
+ arch/arm/dts/k3-am65-iot2050-boot-image.dtsi | 6 +++---
+ doc/board/siemens/iot2050.rst                | 8 ++++++++
+ tools/binman/missing-blob-help               | 8 ++++++++
+ 3 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/dts/k3-am65-iot2050-boot-image.dtsi b/arch/arm/dts/k3-am65-iot2050-boot-image.dtsi
+index 9082a79a03..0f38047ee8 100644
+--- a/arch/arm/dts/k3-am65-iot2050-boot-image.dtsi
++++ b/arch/arm/dts/k3-am65-iot2050-boot-image.dtsi
+@@ -111,10 +111,10 @@
+ 		};
+ 
+ 		/* OTP update command block */
+-		fill@0x6c0000 {
++		blob-ext@0x6c0000 {
+ 			offset = <0x6c0000>;
+-			size   = <0x010000>;
+-			fill-byte = [ff];
++			filename = "otpcmd.bin";
++			missing-msg = "iot2050-otpcmd";
+ 		};
+ 	};
+ };
+diff --git a/doc/board/siemens/iot2050.rst b/doc/board/siemens/iot2050.rst
+index 4e0925c72c..09767277f0 100644
+--- a/doc/board/siemens/iot2050.rst
++++ b/doc/board/siemens/iot2050.rst
+@@ -27,6 +27,14 @@ The following binaries from that source need to be present in the build folder:
+  - seboot_pg1.bin
+  - seboot_pg2.bin
+ 
++For building image containing the OTP key provisioning data, below binary need
++to be present in the build folder:
++
++  - otpcmd.bin
++
++Regarding how to generating this otpcmd.bin, please refer to:
++https://github.com/siemens/meta-iot2050/tree/master/recipes-bsp/secure-boot-otp-provisioning/files/make-otpcmd.sh
++
+ Building
+ --------
+ 
+diff --git a/tools/binman/missing-blob-help b/tools/binman/missing-blob-help
+index 38371ef8b3..c79f68a70c 100644
+--- a/tools/binman/missing-blob-help
++++ b/tools/binman/missing-blob-help
+@@ -27,3 +27,11 @@ k3-rti-wdt-firmware:
+ If CONFIG_WDT_K3_RTI_LOAD_FW is enabled, a firmware image is needed for
+ the R5F core(s) to trigger the system reset. One possible source is
+ https://github.com/siemens/k3-rti-wdt.
++
++iot2050-otpcmd:
++See the documentation for IOT2050 board. Your image is missing OTP command data
++block which is used for provisioning the customer keys to the board.
++Please refer to
++meta-iot2050/tree/master/recipes-bsp/secure-boot-otp-provisioning/files/make-otpcmd.sh
++for how to generate this binary. If you are not using secure boot or not tend to
++provision the keys, this could be safely ignored.
+-- 
+2.30.2
+
