@@ -37,12 +37,23 @@ DEBIAN_BUILD_DEPENDS =. "openssl, libssl-dev:native, libssl-dev:arm64, \
 DEBIAN_BUILD_DEPENDS_append_secureboot = ", python3-pycryptodome:native, \
     pesign, python3-openssl:native"
 
+IOT2050_OTPCMD ?= "0"
+
+DEPENDS += "${@ ' \
+    secure-boot-otp-provisioning \
+    ' if d.getVar('IOT2050_OTPCMD') == '1' else ''}"
+
+DEBIAN_BUILD_DEPENDS += "${@ ' \
+    ,secure-boot-otp-provisioning, \
+    ' if d.getVar('IOT2050_OTPCMD') == '1' else ''}"
+
 U_BOOT_CONFIG_PACKAGE = "1"
 
 do_prepare_build_append() {
     cd ${S}
     ln -sf ../prebuild/* ${S}
     ln -sf /lib/firmware/k3-rti-wdt.fw ${S}
+    ln -sf /usr/lib/secure-boot-otp-provisioning/otpcmd.bin ${S}
     echo "${SPI_FLASH_IMG} /usr/lib/u-boot/${MACHINE}" > \
         ${S}/debian/u-boot-${MACHINE}.install
     echo -$(${ISAR_RELEASE_CMD}) > ${S}/.scmversion
