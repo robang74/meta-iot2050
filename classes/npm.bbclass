@@ -12,6 +12,7 @@ inherit dpkg-raw
 NPMPN ?= "${PN}"
 NPM_SHRINKWRAP ?= "file://npm-shrinkwrap.json"
 NPM_LOCAL_INSTALL_DIR ?= ""
+NPM_INSTALL_FLAGS ?= ""
 
 NPM_REBUILD ?= "1"
 
@@ -34,7 +35,7 @@ NPM_CLASS_PACKAGE ?= "npm"
 OWN_NPM_CLASS_PACKAGE ?= "0"
 
 # needed as gyp from bullseye does not establish /usr/bin/python
-NPM_EXTRA_DEPS = "${@'python' if d.getVar('NPM_REBUILD') == '1' else ''}"
+NPM_EXTRA_DEPS = "${@'python-is-python3' if d.getVar('NPM_REBUILD') == '1' else ''}"
 
 python() {
     src_uri = (d.getVar('SRC_URI', True) or "").split()
@@ -234,7 +235,7 @@ do_install() {
     export CHDIR INSTALL_FLAGS
     sudo -E chroot --userspec=$(id -u):$(id -g) ${BUILDCHROOT_DIR} sh -c ' \
         cd $CHDIR
-        npm install $INSTALL_FLAGS /downloads/${@get_npm_bundled_tgz(d)}
+        npm install $INSTALL_FLAGS ${NPM_INSTALL_FLAGS} /downloads/${@get_npm_bundled_tgz(d)}
     '
 
     # this is left behind by npm, despite --no-package-lock and --no-save

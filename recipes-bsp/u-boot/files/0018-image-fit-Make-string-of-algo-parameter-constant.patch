@@ -1,7 +1,7 @@
-From 7de3a8daf61d748927dfb470fbf5919871986218 Mon Sep 17 00:00:00 2001
+From 008ca4348dce2ba508f9ab91aa727e23e3bc97fb Mon Sep 17 00:00:00 2001
 From: Jan Kiszka <jan.kiszka@siemens.com>
 Date: Fri, 14 Jan 2022 10:21:17 +0100
-Subject: [PATCH 18/24] image-fit: Make string of algo parameter constant
+Subject: [PATCH 18/32] image-fit: Make string of algo parameter constant
 
 Modifications would be invalid.
 

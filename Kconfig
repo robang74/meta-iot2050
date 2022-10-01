@@ -50,6 +50,17 @@ config IMAGE_BOOT_PG2
 	  that it fits AND you have an external flash programmer at hand that
 	  allows to recover. Otherwise you risk to BRICK THE IOT2050!
 
+config IMAGE_BOOT_M2
+	bool "Firmware image for M2 devices"
+	help
+	  Build the firmware image that is responsible for booting Product
+	  Generation 2 (PG2) devices.
+	  It's the same as IMAGE_BOOT_PG2 option
+
+	  WARNING: Do not flash this image onto your device unless you know
+	  that it fits AND you have an external flash programmer at hand that
+	  allows to recover. Otherwise you risk to BRICK THE IOT2050!
+
 endchoice
 
 config KAS_INCLUDE_MAIN
@@ -58,6 +69,7 @@ config KAS_INCLUDE_MAIN
 	default "kas-iot2050-swupdate.yml" if IMAGE_SWUPDATE
 	default "kas-iot2050-boot-pg1.yml" if IMAGE_BOOT_PG1
 	default "kas-iot2050-boot-pg2.yml" if IMAGE_BOOT_PG2
+	default "kas-iot2050-boot-m2.yml" if IMAGE_BOOT_M2
 
 comment "Image features"
 
@@ -115,7 +127,7 @@ config SECURE_BOOT
 
 config SECURE_BOOT
 	bool "Secure boot"
-	depends on IMAGE_BOOT_PG2
+	depends on IMAGE_BOOT_PG2 || IMAGE_BOOT_M2
 	help
 	  Enable signing of all customizable firmware artifacts, enforce UEFI
 	  Secure Boot mode, protect sensitive U-Boot environment variables and
@@ -125,10 +137,46 @@ config SECURE_BOOT
 	  This uses the public custMpk.key and certificate by default. Do not
 	  use this key in production, it is for demonstration purposes only.
 
+config OTP_PROVISIONING
+	bool "OTP Provisioning"
+	depends on IMAGE_BOOT_PG2 || IMAGE_BOOT_M2
+	help
+	  Integrate OTP provisioning data into the firmware artifacts. Various
+	  options are avaiable. By default, this will integrate the OTP command
+	  data for provision two public key hashes and enable secure boot in
+	  OTP. 
+
+	  WARNING: This uses the dummy keys by default. Do not use these keys
+	  in production, they are for demonstration purposes only.
+
+config RPMB_SETUP
+	bool "OPTEE RPMB setup for OTP key write"
+	depends on IMAGE_BOOT_PG2 && !SECURE_BOOT
+	help
+	   Enable one-time pairing between processor and secure storage
+	   (RPMB on eMMC). Do not sign and distribute this version. Run it
+	   only in a secure environment on the target device, then replace it
+	   with signed production firmware and enable secure boot.
+
 config KAS_INCLUDE_SECURE_BOOT
 	string
 	default "kas/opt/secure-boot.yml"
 	depends on SECURE_BOOT
+
+config KAS_INCLUDE_OTP_PROVISIONING
+	string
+	default "kas/opt/otpcmd/key-provision.yml" if OTP_PROVISIONING_2KEYS_ENABLE
+	default "kas/opt/otpcmd/key-provision-keys-only.yml" if OTP_PROVISIONING_2KEYS
+	default "kas/opt/otpcmd/key-provision-3keys.yml" if OTP_PROVISIONING_3KEYS_ENABLE
+	default "kas/opt/otpcmd/key-provision-enabling-only.yml" if OTP_PROVISIONING_ENABLING_ONLY
+	default "kas/opt/otpcmd/key-switch.yml" if OTP_PROVISIONING_KEY_SWITCHING_1TO2
+	default "kas/opt/otpcmd/key-switch-2to3.yml" if OTP_PROVISIONING_KEY_SWITCHING_2TO3
+	depends on OTP_PROVISIONING
+
+config KAS_INCLUDE_RPMB_SETUP
+	string
+	default "kas/opt/rpmb-setup.yml"
+	depends on RPMB_SETUP
 
 comment "Build options"
 
@@ -177,7 +225,57 @@ config KAS_INCLUDE_DEBIAN_MIRROR
 config FIRMWARE_SECURE_VER
 	string "Use specific firmware secure version"
 	default "0"
-	depends on SECURE_BOOT && IMAGE_BOOT_PG2
+	depends on SECURE_BOOT && (IMAGE_BOOT_PG2 || IMAGE_BOOT_M2)
 	help
 	  Use specific anti-rollback secure version rather than the default 0.
 	  Range 0 - 127.
+
+choice
+	prompt "*** OTP provisioning command type ***"
+	depends on OTP_PROVISIONING
+	default OTP_PROVISIONING_2KEYS_ENABLE
+
+config OTP_PROVISIONING_2KEYS_ENABLE
+	bool "2 keys & enabling secure boot"
+	help
+	  OTP provisioning command data contains the public key hashes of 
+	  below keys and enabling secure boot:
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custMpk.pem
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custSmpk.pem
+
+
+config OTP_PROVISIONING_2KEYS
+	bool "2 keys only"
+	help
+	  OTP provisioning command data contains the public key hashes of 
+	  below keys but without enabling secure boot:
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custMpk.pem
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custSmpk.pem
+
+config OTP_PROVISIONING_3KEYS_ENABLE
+	bool "3 keys & enabling secure boot"
+	help
+	  OTP provisioning command data contains the public key hashes of 
+	  below keys and enabling secure boot:
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custMpk.pem
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custSmpk.pem
+	  * recipes-bsp/secure-boot-otp-provisioning/files/keys/custBmpk.pem
+
+config OTP_PROVISIONING_ENABLING_ONLY
+	bool "Enabling secure boot only"
+	help
+	  OTP provisioning command data only contains enabling secure boot.
+
+config OTP_PROVISIONING_KEY_SWITCHING_1TO2
+	bool "Key switching from key 1 to key 2"
+	help
+	  OTP provisioning command data contains key switching from key 1
+	  to key 2.
+
+config OTP_PROVISIONING_KEY_SWITCHING_2TO3
+	bool "Key switching from key 2 to key 3"
+	help
+	  OTP provisioning command data contains key switching from key 2
+	  to key 3.
+
+endchoice

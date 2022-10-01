@@ -1,7 +1,7 @@
-From 08b080e98d7e22049830f28a6bfb9790d11ab619 Mon Sep 17 00:00:00 2001
+From ae781381e0aeb4f632b8d2d4cfaffc21a8b32327 Mon Sep 17 00:00:00 2001
 From: Jan Kiszka <jan.kiszka@siemens.com>
 Date: Fri, 14 Jan 2022 18:52:06 +0100
-Subject: [PATCH 08/24] iot2050: Update firmware layout
+Subject: [PATCH 08/32] iot2050: Update firmware layout
 
 The latest version of the binary-only firmware parts come in a combined
 form of FSBL and sysfw containers. This implies some layout changes to

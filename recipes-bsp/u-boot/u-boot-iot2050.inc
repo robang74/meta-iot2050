@@ -18,12 +18,16 @@ SRC_URI += " \
     file://prebuild \
     file://fw_env.config"
 SRC_URI_append_secureboot = " \
-    file://keys \
+    file://keys/custMpk.crt \
+    file://keys/custMpk.key \
+    file://keys/custMpk.pem \
+    file://keys/x509-sysfw-template.txt \
     file://secure-boot.cfg"
 SRC_URI_append_otpcmd = " \
     file://otpcmd.cfg"
 
 U_BOOT_BIN = "flash.bin"
+U_BOOT_ENV = "u-boot-initial-env"
 
 SPI_FLASH_IMG = "${U_BOOT_BIN}"
 SPI_FLASH_DEPLOY_IMG ??= "iot2050-image-boot.bin"
@@ -84,14 +88,17 @@ dpkg_runbuild_prepend_secureboot() {
 
 dpkg_build_sstate_prepare_append() {
     ln -f ${S}/${SPI_FLASH_IMG} -t ${DPKG_SSTATE}
+    ln -f ${S}/${U_BOOT_ENV} -t ${DPKG_SSTATE}
 }
 
 dpkg_build_sstate_finalize_append() {
     ln -f ${DPKG_SSTATE}/${SPI_FLASH_IMG} -t ${S}
+    ln -f ${DPKG_SSTATE}/${U_BOOT_ENV} -t ${S}
 }
 
 do_deploy() {
     cp -f "${S}/${SPI_FLASH_IMG}" "${DEPLOY_DIR_IMAGE}/${SPI_FLASH_DEPLOY_IMG}"
+    cp -f "${S}/${U_BOOT_ENV}" "${DEPLOY_DIR_IMAGE}/"
 }
 
 addtask deploy after do_dpkg_build before do_build
