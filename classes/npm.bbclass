@@ -37,6 +37,9 @@ OWN_NPM_CLASS_PACKAGE ?= "0"
 # needed as gyp from bullseye does not establish /usr/bin/python
 NPM_EXTRA_DEPS = "${@'python-is-python3' if d.getVar('NPM_REBUILD') == '1' else ''}"
 
+DEBIAN_BUILD_DEPENDS =. "${@'python, libnode72,' if d.getVar('NPM_REBUILD') == '1' else ''}"
+DEBIAN_BUILD_DEPENDS =. "${NPM_CLASS_PACKAGE},"
+
 python() {
     src_uri = (d.getVar('SRC_URI', True) or "").split()
     if len(src_uri) == 0:
@@ -88,6 +91,16 @@ def runcmd(d, cmd, dir):
             cmd, (":\n" + output) if output else ""))
     bb.note(output)
 
+def apply_mirrors_in_shrinkwrap(path, pattern, subst):
+    import json, re
+    with open(path, 'r') as f:
+        data = json.load(f)
+    for pname, pdef in data['packages'].items():
+        if 'resolved' in pdef:
+            pdef['resolved'] = re.sub(pattern, subst, pdef['resolved'])
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=2)
+
 do_install_npm() {
     install_cmd="sudo -E chroot ${BUILDCHROOT_DIR} \
         apt-get install -y -o Debug::pkgProblemResolver=yes \
@@ -115,7 +128,7 @@ do_install_npm[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
 addtask install_npm before do_fetch
 
 python fetch_npm() {
-    import json, os, shutil
+    import json, os, shutil, re
 
     workdir = d.getVar('WORKDIR');
     tmpdir = workdir + "/fetch-tmp"
@@ -156,7 +169,16 @@ python fetch_npm() {
     # be created in this directory
     os.environ['HOME'] = d.getVar('PP') + "/fetch-tmp"
 
-    os.environ.update({'npm_config_registry': d.getVar('NPM_REGISTRY')})
+    # apply simplified PREMIRRORS logic to NPM_REGISTRY and shrinkwrap
+    npm_registry = d.getVar('NPM_REGISTRY', True)
+    mirrors = bb.fetch2.mirror_from_string(d.getVar('PREMIRRORS'))
+    npm_mirrors = filter(lambda m: m[0].startswith('npm://'), mirrors)
+    for m in npm_mirrors:
+        pattern = m[0].replace('npm://','')
+        subst = m[1].replace('npm://','')
+        npm_registry = re.sub(pattern, subst, npm_registry)
+        apply_mirrors_in_shrinkwrap('npm-shrinkwrap.json', pattern, subst)
+    os.environ.update({'npm_config_registry': npm_registry})
 
     npmpn = d.getVar('NPMPN')
 
@@ -206,25 +228,22 @@ python clean_npm() {
 do_cleanall[postfuncs] += "clean_npm"
 
 do_install() {
-    dpkg_do_mounts
+    # create directories to be installed
+    if [ -n "${NPM_LOCAL_INSTALL_DIR}" ]; then
+        mkdir -p ${D}/${NPM_LOCAL_INSTALL_DIR}
+    else
+        mkdir -p ${D}/usr/lib
+    fi
+}
 
-    # changing the home directory to the working directory, the .npmrc will
-    # be created in this directory
-    export HOME=${PP}
-
-    # ensure empty cache
-    export npm_config_cache=${PP}/npm_cache
-    sudo rm -rf ${WORKDIR}/npm_cache
-
+do_prepare_build_append() {
     INSTALL_FLAGS="--offline --only=production --no-package-lock --verbose \
                    --arch=${NPM_ARCH} --target_arch=${NPM_ARCH}"
 
     if [ -n "${NPM_LOCAL_INSTALL_DIR}" ]; then
-        mkdir -p ${D}/${NPM_LOCAL_INSTALL_DIR}
         CHDIR=${PP}/image/${NPM_LOCAL_INSTALL_DIR}
     else
         CHDIR=/
-        mkdir -p ${D}/usr/lib
         INSTALL_FLAGS="$INSTALL_FLAGS --prefix ${PP}/image/usr -g"
     fi
 
@@ -232,24 +251,22 @@ do_install() {
         INSTALL_FLAGS="$INSTALL_FLAGS --build-from-source --no-save"
     fi
 
-    export CHDIR INSTALL_FLAGS
-    sudo -E chroot --userspec=$(id -u):$(id -g) ${BUILDCHROOT_DIR} sh -c ' \
-        cd $CHDIR
-        npm install $INSTALL_FLAGS ${NPM_INSTALL_FLAGS} /downloads/${@get_npm_bundled_tgz(d)}
-    '
-
-    # this is left behind by npm, despite --no-package-lock and --no-save
-    if [ -n "${NPM_LOCAL_INSTALL_DIR}" ]; then
-        rm -f ${D}/${NPM_LOCAL_INSTALL_DIR}/node_modules/.package-lock.json
-    fi
-
-    dpkg_undo_mounts
-}
-
-do_prepare_build_append() {
-    # disable slow stripping - not enough value for our ad-hoc npm packaging
     cat <<EOF >> ${S}/debian/rules
 
+export HOME=${PP}
+export npm_config_cache=${PP}/npm_cache
+
+override_dh_clean:
+	rm -rf ${CHDIR}/node_modules
+	rm -rf $(npm_config_cache)
+
+override_dh_auto_build:
+	cd ${CHDIR} && npm install ${INSTALL_FLAGS} ${NPM_INSTALL_FLAGS} /downloads/${@get_npm_bundled_tgz(d)}
+	if [ -n "${NPM_LOCAL_INSTALL_DIR}" ]; then \
+	    rm -f ${CHDIR}/node_modules/.package-lock.json; \
+	fi
+
+# disable slow stripping - not enough value for our ad-hoc npm packaging
 override_dh_strip_nondeterminism:
 EOF
 }
