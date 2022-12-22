@@ -12,6 +12,7 @@ inherit dpkg
 DESCRIPTION = "Low Level Skeleton Library for Communication on GNU/Linux platforms"
 MAINTAINER = "le.jin@siemens.com"
 SRC_URI += "git://github.com/eclipse/mraa.git;protocol=https \
+            file://0001-gpio-Fix-JS-binding-regarding-interrupt-injections.patch \
             file://rules"
 SRCREV = "8b1c54934e80edc2d36abac9d9c96fe1e01cb669"
 
@@ -28,7 +29,7 @@ DEBIAN_BUILD_DEPENDS = " \
     libjson-c-dev, \
     default-jdk:native"
 
-DEBIAN_DEPENDS = "python3, nodejs"
+DEBIAN_DEPENDS = "python3, nodejs, \${shlibs:Depends}"
 
 do_prepare_build[cleandirs] += "${S}/debian"
 
