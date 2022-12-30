@@ -17,7 +17,7 @@ PRESERVE_PERMS = "usr/lib/node_modules/node-red/red.js"
 
 SRC_URI += "file://node-red.service"
 
-do_install_append() {
+do_install:append() {
     install -v -d ${D}/lib/systemd/system/
     install -v -m 644 ${WORKDIR}/node-red.service ${D}/lib/systemd/system/
 }

@@ -27,7 +27,7 @@ OPTEE_EXTRA_BUILDARGS = " \
     CFG_IN_TREE_EARLY_TAS=avb/023f8f1a-292a-432b-8fc4-de8471358067 \
     CFG_WARN_INSECURE=n"
 
-OPTEE_EXTRA_BUILDARGS_append_rpmb-setup = " CFG_RPMB_WRITE_KEY=y"
+OPTEE_EXTRA_BUILDARGS:append_rpmb-setup = " CFG_RPMB_WRITE_KEY=y"
 
 python() {
     import re

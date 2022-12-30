@@ -14,7 +14,7 @@ DESCRIPTION = "A Node-RED node to communicate via OPC UA based on node-opcua lib
 
 NPM_LOCAL_INSTALL_DIR = "/root/.node-red"
 
-do_prepare_build_append() {
+do_prepare_build:append() {
     # x86-64 binary that breaks Debian packaging.
     # Fortunately only needed for npm release packaging.
     rm -f ${D}/root/.node-red/node_modules/node-red-contrib-opcua/node_modules/node-opcua-pki/pkg/pki
