@@ -13,6 +13,6 @@ inherit dpkg-raw
 DEBIAN_DEPENDS = "k3-rti-wdt, ti-pruss-firmware"
 RDEPENDS = "k3-rti-wdt ti-pruss-firmware"
 
-do_prepare_build_append() {
+do_prepare_build:append() {
     echo "/lib/firmware/k3-rti-wdt.fw /lib/firmware/am65x-mcu-r5f0_0-fw" > ${S}/debian/links
 }

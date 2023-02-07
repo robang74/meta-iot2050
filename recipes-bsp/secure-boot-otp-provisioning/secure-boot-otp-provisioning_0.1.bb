@@ -65,7 +65,7 @@ do_prepare_build() {
             ${S}/debian/secure-boot-otp-provisioning.install
 }
 
-dpkg_runbuild_append() {
+dpkg_runbuild:append() {
     # remove keys from source archive
     gunzip ${WORKDIR}/${PN}_${PV}.tar.gz
     tar --delete -f ${WORKDIR}/${PN}_${PV}.tar ${PN}-${PV}/keys

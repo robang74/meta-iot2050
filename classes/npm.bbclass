@@ -237,7 +237,7 @@ do_install() {
     fi
 }
 
-do_prepare_build_append() {
+do_prepare_build:append() {
     INSTALL_FLAGS="--offline --only=production --no-package-lock --verbose \
                    --arch=${NPM_ARCH} --target_arch=${NPM_ARCH} \
                    --no-audit"

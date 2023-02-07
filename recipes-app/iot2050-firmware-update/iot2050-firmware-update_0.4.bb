@@ -22,7 +22,7 @@ do_install() {
     install -v -m 755 ${WORKDIR}/iot2050-firmware-update ${D}/usr/sbin/
 }
 
-do_deploy_deb_append() {
+do_deploy_deb:append() {
     cp -f "${WORKDIR}/${PN}_${PV}_arm64.deb" "${DEPLOY_DIR_IMAGE}/"
 }
 

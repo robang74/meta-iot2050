@@ -14,5 +14,5 @@ INITRAMFS_INSTALL += " \
     initramfs-etc-overlay-hook \
     initramfs-abrootfs-hook \
     "
-INITRAMFS_INSTALL_append_secureboot += " initramfs-verity-hook"
-INITRAMFS_INSTALL_remove_secureboot += " initramfs-abrootfs-hook"
+INITRAMFS_INSTALL:append_secureboot = " initramfs-verity-hook"
+INITRAMFS_INSTALL:remove_secureboot = " initramfs-abrootfs-hook"
