@@ -107,8 +107,6 @@ do_install_npm() {
         apt-get install -y -o Debug::pkgProblemResolver=yes \
                 --no-install-recommends"
 
-    dpkg_do_mounts
-
     E="${@ bb.utils.export_proxies(d)}"
     deb_dl_dir_import "${BUILDCHROOT_DIR}" ${BASE_DISTRO}-${BASE_DISTRO_CODENAME}
     sudo -E chroot ${BUILDCHROOT_DIR} \
@@ -125,6 +123,7 @@ do_install_npm() {
 do_install_npm[depends] += "${@d.getVarFlag('do_apt_fetch', 'depends')}"
 do_install_npm[depends] += "${@(d.getVar('NPM_CLASS_PACKAGE') + ':do_deploy_deb') if d.getVar('OWN_NPM_CLASS_PACKAGE') == '1' else ''}"
 do_install_npm[lockfiles] += "${REPO_ISAR_DIR}/isar.lock"
+do_install_npm[network] += "${TASK_USE_SUDO}"
 
 addtask install_npm before do_fetch
 
@@ -158,7 +157,6 @@ python fetch_npm() {
         if hash == fetch_hash:
             return
 
-    bb.build.exec_func("dpkg_do_mounts", d)
     bb.utils.export_proxies(d)
 
     old_cwd = os.getcwd()
