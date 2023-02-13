@@ -12,6 +12,6 @@ local_conf_header:
   upstream-versions: |
     PREFERRED_VERSION_u-boot-iot2050-pg1 = "202x.xx-upstream"
     PREFERRED_VERSION_u-boot-iot2050-pg2 = "202x.xx-upstream"
-    PREFERRED_VERSION_linux-iot2050 = "5.x-upstream"
+#   PREFERRED_VERSION_linux-iot2050 = "5.x-upstream"
   extra-args: |
     EXTRA_KERNEL_PARAMS = "fw_devlink=permissive"
