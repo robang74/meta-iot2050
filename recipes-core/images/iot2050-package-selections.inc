@@ -97,8 +97,8 @@ IOT2050_DEBIAN_DOCKER_PACKAGES = " \
     "
 # coral support
 IOT2050_CORAL_PACKAGES = " \
-    python3-pycoral \
-    pycoral-examples \
     "
+#   python3-pycoral \
+#   pycoral-examples \
 #   gasket-module-${KERNEL_NAME} \
 #

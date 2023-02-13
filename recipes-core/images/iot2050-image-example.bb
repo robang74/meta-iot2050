@@ -29,6 +29,12 @@ IMAGE_PREINSTALL += "${@ ' \
     ${IOT2050_DEBIAN_DOCKER_PACKAGES} \
     ' if d.getVar('IOT2050_DOCKER_SUPPORT') == '1' else ''}"
 
+IOT2050_CORAL_SUPPORT ?= "1"
+
+IMAGE_INSTALL += " \
+    ${@ '${IOT2050_CORAL_PACKAGES}' \
+    if d.getVar('IOT2050_CORAL_SUPPORT') == '1' else ''}"
+
 IMAGE_INSTALL += " \
     expand-on-first-boot \
     sshd-regen-keys \
@@ -40,13 +46,9 @@ IMAGE_INSTALL += " \
     iot2050-firmware-update \
     tcf-agent \
     mraa \
-    node-red \
-    node-red-gpio \
-    node-red-preinstalled-nodes \
     "
 
-IOT2050_CORAL_SUPPORT ?= "1"
-
-IMAGE_INSTALL += " \
-    ${@ '${IOT2050_CORAL_PACKAGES}' \
-    if d.getVar('IOT2050_CORAL_SUPPORT') == '1' else ''}"
+#   node-red \
+#   node-red-gpio \
+#   node-red-preinstalled-nodes \
+#
