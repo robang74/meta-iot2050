@@ -58,7 +58,8 @@ python image_postprocess_restore_sources_list () {
 }
 
 # Make the .wic.img symlink to the .wic file for better backward compatibility
+do_deploy[network] = "${TASK_USE_SUDO}"
 do_deploy() {
     echo "Linking wic img"
-    ln -sf ${IMAGE_FULLNAME}.wic ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.img
+    sudo ln -sf ${IMAGE_FULLNAME}.wic ${DEPLOY_DIR_IMAGE}/${IMAGE_FULLNAME}.wic.img
 }
